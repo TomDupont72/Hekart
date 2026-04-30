@@ -20,7 +20,7 @@ export default function Register() {
       >
         <Card className="min-w-80">
           <CardHeader>
-            <CardTitle>S'inscrire'</CardTitle>
+            <CardTitle>S'inscrire</CardTitle>
           </CardHeader>
           <CardContent>
             <form className="flex flex-col gap-4">
@@ -46,9 +46,13 @@ export default function Register() {
             </form>
           </CardContent>
         </Card>
-        <p className="ml-4">
+        <p className="text-muted-foreground ml-4">
           Déjà un compte ?
-          <Button variant="link" onClick={() => navigate("/login")}>
+          <Button
+            variant="link"
+            className="text-foreground"
+            onClick={() => navigate("/login")}
+          >
             Se connecter
           </Button>
         </p>

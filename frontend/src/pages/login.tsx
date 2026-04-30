@@ -36,9 +36,13 @@ export default function Login() {
             </form>
           </CardContent>
         </Card>
-        <p className="ml-4">
+        <p className="text-muted-foreground ml-4">
           Pas encore de compte ?
-          <Button variant="link" onClick={() => navigate("/register")}>
+          <Button
+            variant="link"
+            className="text-foreground"
+            onClick={() => navigate("/register")}
+          >
             S'inscrire
           </Button>
         </p>

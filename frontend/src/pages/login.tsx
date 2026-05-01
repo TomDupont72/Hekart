@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function Login() {
-  const navigate = useNavigate();
+  const { navigate, setEmailSI, setPasswordSI, loading, error, signIn } =
+    useAuth();
 
   return (
     <main className="flex h-screen items-center justify-center">
@@ -23,16 +25,25 @@ export default function Login() {
             <CardTitle>Se connecter</CardTitle>
           </CardHeader>
           <CardContent>
-            <form className="flex flex-col gap-4">
+            <form className="flex flex-col gap-4" onSubmit={(e) => signIn(e)}>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="email">Email</Label>
-                <Input type="email" id="email" />
+                <Input
+                  type="email"
+                  id="email"
+                  onChange={(e) => setEmailSI(e.target.value)}
+                />
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="password">Mot de passe</Label>
-                <InputPassword id="password" />
+                <InputPassword
+                  id="password"
+                  onChange={(e) => setPasswordSI(e.target.value)}
+                />
               </div>
-              <Button type="submit">Se connecter</Button>
+              <Button disabled={loading} type="submit">
+                {loading ? <Spinner /> : "Se connecter"}
+              </Button>
             </form>
           </CardContent>
         </Card>

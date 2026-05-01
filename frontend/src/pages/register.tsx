@@ -3,11 +3,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
+import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 
 export default function Register() {
-  const navigate = useNavigate();
+  const {
+    navigate,
+    setUsernameR,
+    setEmailR,
+    setPasswordR,
+    setPasswordConfirmR,
+    loading,
+    error,
+    register,
+  } = useAuth();
 
   return (
     <main className="flex h-screen items-center justify-center">
@@ -23,26 +33,42 @@ export default function Register() {
             <CardTitle>S'inscrire</CardTitle>
           </CardHeader>
           <CardContent>
-            <form className="flex flex-col gap-4">
+            <form className="flex flex-col gap-4" onSubmit={(e) => register(e)}>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="username">Nom d'utilisateur</Label>
-                <Input type="text" id="username" />
+                <Input
+                  type="text"
+                  id="username"
+                  onChange={(e) => setUsernameR(e.target.value)}
+                />
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="email">Email</Label>
-                <Input type="email" id="email" />
+                <Input
+                  type="email"
+                  id="email"
+                  onChange={(e) => setEmailR(e.target.value)}
+                />
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="password">Mot de passe</Label>
-                <InputPassword id="password" />
+                <InputPassword
+                  id="password"
+                  onChange={(e) => setPasswordR(e.target.value)}
+                />
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="passwordConfirm">
                   Confirmer le mot de passe
                 </Label>
-                <InputPassword id="passwordConfirm" />
+                <InputPassword
+                  id="passwordConfirm"
+                  onChange={(e) => setPasswordConfirmR(e.target.value)}
+                />
               </div>
-              <Button type="submit">Créer un compte</Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? <Spinner /> : "Créer un compte"}
+              </Button>
             </form>
           </CardContent>
         </Card>

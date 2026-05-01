@@ -1,19 +1,30 @@
 import "dotenv/config";
 import Fastify from "fastify";
+import rateLimit from "@fastify/rate-limit";
+import helmet from "@fastify/helmet";
 import fastifyCors from "@fastify/cors";
+import { authRoutes } from "./routes/auth";
 
 const app = Fastify({
   logger: true,
+  bodyLimit: 10 * 1024 * 1024,
+  trustProxy: true,
 });
 
-app.register(fastifyCors, {
+await app.register(rateLimit, { max: 100, timeWindow: "1 minute" });
+
+await app.register(helmet);
+
+await app.register(fastifyCors, {
   origin: process.env.CLIENT_ORIGIN,
   credentials: true,
 });
 
-app.get("/health", async () => {
+app.get("/api/health", async () => {
   return { status: "ok" };
 });
+
+await app.register(authRoutes, { prefix: "/api/auth" });
 
 await app.listen({
   port: Number(process.env.PORT ?? 8000),

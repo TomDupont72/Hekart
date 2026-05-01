@@ -36,3 +36,13 @@ export async function apiSignUp(
 
   return data;
 }
+
+export async function apiLogOut() {
+  const success = authClient.signOut();
+
+  if (!success) {
+    throw new Error("Failed to log out");
+  }
+
+  return success;
+}

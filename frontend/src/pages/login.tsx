@@ -20,7 +20,7 @@ export default function Login() {
         transition={{ duration: 0.3 }}
         className="flex flex-col items-center gap-4"
       >
-        <Card className="min-w-80">
+        <Card className="min-w-90">
           <CardHeader>
             <CardTitle>Se connecter</CardTitle>
           </CardHeader>

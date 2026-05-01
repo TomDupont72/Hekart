@@ -1,9 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@fontsource-variable/red-hat-mono/wght.css";
+@import "@fontsource-variable/outfit";
+@import "@fontsource-variable/zalando-sans";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  font-family:
+    "Red Hat Mono Variable", "Outfit Variable", "Inter Variable", system-ui,
+    Avenir, Helvetica, Arial, sans-serif;
   --background: oklch(92.13% 0.0388 282.36);
   --secondary-background: oklch(100% 0 0);
   --foreground: oklch(0% 0 0);
@@ -14,6 +20,7 @@
   --ring: oklch(0% 0 0);
   --overlay: oklch(0% 0 0 / 0.8);
   --shadow: 4px 4px 0px 0px var(--border);
+  --line: oklch(82.736% 0.00109 12.426);
   --chart-1: #7a83ff;
   --chart-2: #facc00;
   --chart-3: #ff4d50;
@@ -32,6 +39,7 @@
   --border: oklch(0% 0 0);
   --ring: oklch(100% 0 0);
   --shadow: 4px 4px 0px 0px var(--border);
+  --line: oklch(36.002% 0.00004 271.152);
   --chart-1: #7a83ff;
   --chart-2: #e0b700;
   --chart-3: #ff6669;
@@ -69,6 +77,13 @@
 @layer base {
   body {
     @apply text-foreground font-base bg-background;
+
+    background-color: var(--background);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 60px 60px;
+    background-position: 10px 10px;
   }
 
   h1,
@@ -77,6 +92,6 @@
   h4,
   h5,
   h6 {
-    @apply font-heading;
+    font-family: "Zalando Sans Variable";
   }
 }

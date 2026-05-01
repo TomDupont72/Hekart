@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
-import { useNavigate } from "react-router-dom";
-import { apiSignIn, apiSignUp } from "@/api/auth";
+import { useNavigate, useLocation } from "react-router-dom";
+import { apiLogOut, apiSignIn, apiSignUp } from "@/api/auth";
 import { RegisterSchema, SignInSchema } from "@/modules/auth.schemas";
 import { useMutation } from "@tanstack/react-query";
 import type { AppSession } from "@/models/auth.models";
 
 export function useAuth() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const { data: session } = authClient.useSession();
 
@@ -60,9 +61,7 @@ export function useAuth() {
     },
     onError: (error) => {
       console.error("[useAuth.signIn] failed", error);
-      setFormError(
-        error instanceof Error ? error.message : "Impossible de se connecter.",
-      );
+      setFormError("Impossible de se connecter.");
     },
   });
 
@@ -115,9 +114,20 @@ export function useAuth() {
     },
     onError: (error) => {
       console.error("[useAuth.register] failed", error);
-      setFormError(
-        error instanceof Error ? error.message : "Impossible de s'inscrire.",
-      );
+      setFormError("Impossible de s'inscrire.");
+    },
+  });
+
+  const logOutMutation = useMutation({
+    mutationFn: async () => {
+      return apiLogOut();
+    },
+    onSuccess: () => {
+      localStorage.removeItem("session");
+    },
+    onError: (error) => {
+      console.error("[useAuth.logOut] failed", error);
+      setFormError("Impossible de se déconnecter.");
     },
   });
 
@@ -143,7 +153,16 @@ export function useAuth() {
     });
   }
 
+  async function logOut() {
+    setFormError(null);
+
+    await logOutMutation.mutateAsync();
+  }
+
   useEffect(() => {
+    const publicRoutes = ["/login", "/register"];
+    const isPublicRoute = publicRoutes.includes(location.pathname);
+
     if (session) {
       localStorage.setItem(
         "session",
@@ -158,8 +177,12 @@ export function useAuth() {
         } as AppSession),
       );
 
-      navigate("/homepage", { replace: true });
+      if (isPublicRoute) navigate("/homepage", { replace: true });
+
+      return;
     }
+
+    if (!isPublicRoute) navigate("/login", { replace: true });
   }, [session, navigate]);
 
   return {
@@ -170,10 +193,15 @@ export function useAuth() {
     setEmailR,
     setPasswordR,
     setPasswordConfirmR,
-    loading: signInMutation.isPending || registerMutation.isPending,
+    loading:
+      signInMutation.isPending ||
+      registerMutation.isPending ||
+      logOutMutation.isPending,
     error: formError,
     setError: setFormError,
     signIn,
     register,
+    logOut,
+    session,
   };
 }

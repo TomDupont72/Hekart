@@ -4,6 +4,10 @@ import rateLimit from "@fastify/rate-limit";
 import helmet from "@fastify/helmet";
 import fastifyCors from "@fastify/cors";
 import { authRoutes } from "./routes/auth";
+import websocket from "@fastify/websocket";
+import { authGuard } from "./plugins/auth-guard";
+import { gameSocket } from "./sockets/game";
+import { gameRoutes } from "./routes/game";
 
 const app = Fastify({
   logger: true,
@@ -20,11 +24,18 @@ await app.register(fastifyCors, {
   credentials: true,
 });
 
+await app.register(websocket);
+
 app.get("/api/health", async () => {
   return { status: "ok" };
 });
 
 await app.register(authRoutes, { prefix: "/api/auth" });
+
+await app.register(authGuard);
+
+await app.register(gameRoutes, { prefix: "api/game" });
+await app.register(gameSocket, { prefix: "ws/game" });
 
 await app.listen({
   port: Number(process.env.PORT ?? 8000),

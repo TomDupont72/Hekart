@@ -3,6 +3,7 @@ import Login from "@/pages/login";
 import Register from "./pages/register";
 import { useEffect } from "react";
 import Homepage from "./pages/homepage";
+import Game from "./pages/game";
 
 export default function App() {
   useEffect(() => {
@@ -14,6 +15,7 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/homepage" element={<Homepage />} />
+      <Route path="/game/:roomId" element={<Game />} />
       <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
   );

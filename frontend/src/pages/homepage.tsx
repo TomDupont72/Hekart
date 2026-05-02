@@ -2,25 +2,46 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/hooks/useAuth";
+import { useGame } from "@/hooks/useGame";
+import { motion } from "framer-motion";
 
 export default function Homepage() {
   const { session, logOut, loading } = useAuth();
+  const { createGame } = useGame();
+
+  if (loading) {
+    return (
+      <main className="flex h-screen justify-center items-center">
+        <Spinner className="size-8" />
+      </main>
+    );
+  }
 
   return (
     <main className="flex h-screen items-center justify-center ">
-      <Card className="flex flex-col items-center justify-center gap-18 pb-12 p-16">
-        <h1 className="text-4xl"> Bonjour {session?.user.name}</h1>
-        <div className="flex md:flex-row flex-col gap-8">
-          <Button className="w-60 h-30 text-lg">Créer une partie</Button>
-          <Button className="w-60 h-30 text-lg">Rejoindre une partie</Button>
-        </div>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, y: 30, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -10, scale: 0.9 }}
+        transition={{ duration: 0.3 }}
+        className="flex items-center gap-4"
+      >
+        <Card className="flex flex-col items-center justify-center gap-18 pb-12 p-16">
+          <h1 className="text-4xl"> Bonjour {session?.user.name}</h1>
+          <div className="flex md:flex-row flex-col gap-8">
+            <Button className="w-60 h-30 text-lg" onClick={createGame}>
+              Créer une partie
+            </Button>
+            <Button className="w-60 h-30 text-lg">Rejoindre une partie</Button>
+          </div>
+        </Card>
+      </motion.div>
       <Button
         className="absolute bottom-5 right-5"
         disabled={loading}
         onClick={logOut}
       >
-        {loading ? <Spinner /> : "Se déconnecter"}
+        Se déconnecter
       </Button>
     </main>
   );

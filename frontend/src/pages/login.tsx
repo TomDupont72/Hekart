@@ -6,10 +6,11 @@ import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { Spinner } from "@/components/ui/spinner";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-  const { navigate, setEmailSI, setPasswordSI, loading, error, signIn } =
-    useAuth();
+  const { setEmailSI, setPasswordSI, loading, error, signIn } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <main className="flex h-screen items-center justify-center">
@@ -20,7 +21,7 @@ export default function Login() {
         transition={{ duration: 0.3 }}
         className="flex flex-col items-center gap-4"
       >
-        <Card className="min-w-90">
+        <Card className="min-w-85">
           <CardHeader>
             <CardTitle>Se connecter</CardTitle>
           </CardHeader>

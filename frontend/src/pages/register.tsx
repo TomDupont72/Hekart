@@ -6,10 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 export default function Register() {
   const {
-    navigate,
     setUsernameR,
     setEmailR,
     setPasswordR,
@@ -18,6 +18,7 @@ export default function Register() {
     error,
     register,
   } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <main className="flex h-screen items-center justify-center">

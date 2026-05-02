@@ -74,3 +74,12 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
+
+model questions {
+  id       Int    @id @default(autoincrement())
+  question String 
+  answer   Float   
+  unit     String?
+
+  @@unique([question])
+}

@@ -3,7 +3,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useGame } from "@/hooks/useGame";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
 export default function Game() {
@@ -11,7 +10,7 @@ export default function Game() {
 
   const navigate = useNavigate();
 
-  const { room } = useGame(roomId);
+  const { room, joinGame, setJoinRoomId } = useGame(roomId);
 
   if (!roomId) {
     return (
@@ -28,11 +27,16 @@ export default function Game() {
               <form
                 className="flex flex-col items-center justify-center gap-8 pb-12 p-16"
                 onSubmit={(e) => {
-                  e.preventDefault();
+                  joinGame(e);
                 }}
               >
                 <h1 className="text-3xl">Rejoindre une partie</h1>
-                <Input type="text" placeholder="Id de la partie" id="roomId" />
+                <Input
+                  type="text"
+                  placeholder="Id de la partie"
+                  id="roomId"
+                  onChange={(e) => setJoinRoomId(e.target.value)}
+                />
                 <div className="flex md:flex-row flex-col gap-8">
                   <Button type="submit" className="w-60 h-20 text-lg">
                     Rejoindre la partie

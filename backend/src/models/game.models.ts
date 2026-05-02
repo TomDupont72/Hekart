@@ -5,12 +5,18 @@ type Player = {
   score: number;
 };
 
+type Question = {
+  question: string;
+  answer: number;
+  unit: string | null;
+};
+
 export class Room {
   status: "lobby" | "playing" | "results" | "finished" = "lobby";
   round: number = 0;
   players: Record<string, Player> = {};
   anwsers: Record<string, number | null> = {};
-  questions: string[] = [];
+  questions: Question[] = [];
 
   addPlayer(userId: string, name: string) {
     this.players[userId] = { name, score: 0 };

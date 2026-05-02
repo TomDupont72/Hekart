@@ -38,11 +38,9 @@ export async function apiSignUp(
 }
 
 export async function apiLogOut() {
-  const success = authClient.signOut();
+  const { error } = await authClient.signOut();
 
-  if (!success) {
+  if (error) {
     throw new Error("Failed to log out");
   }
-
-  return success;
 }

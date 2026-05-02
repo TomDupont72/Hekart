@@ -10,7 +10,9 @@ export function useAuth() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { data: session } = authClient.useSession();
+  const localSession = JSON.parse(localStorage.getItem("session") || "null");
+
+  const [session, setSession] = useState<AppSession | null>(null);
 
   const [emailSI, setEmailSI] = useState("");
   const [passwordSI, setPasswordSI] = useState("");
@@ -124,6 +126,8 @@ export function useAuth() {
     },
     onSuccess: () => {
       localStorage.removeItem("session");
+      setSession(null);
+      navigate("/login", { replace: true });
     },
     onError: (error) => {
       console.error("[useAuth.logOut] failed", error);
@@ -163,27 +167,36 @@ export function useAuth() {
     const publicRoutes = ["/login", "/register"];
     const isPublicRoute = publicRoutes.includes(location.pathname);
 
-    if (session) {
-      localStorage.setItem(
-        "session",
-        JSON.stringify({
-          user: {
-            email: session.user.email,
-            name: session.user.name,
-            id: session.user.id,
-          },
-          expiresAt: session.session.expiresAt,
-          createdAt: session.user.createdAt,
-        } as AppSession),
-      );
-
+    if (localSession?.user?.id) {
+      setSession(localSession);
       if (isPublicRoute) navigate("/homepage", { replace: true });
-
       return;
     }
 
-    if (!isPublicRoute) navigate("/login", { replace: true });
-  }, [session, navigate]);
+    authClient.getSession().then((res) => {
+      if (!res.data) {
+        if (!isPublicRoute) navigate("/login", { replace: true });
+        return;
+      }
+
+      console.log("coucou");
+
+      const appSession: AppSession = {
+        user: {
+          email: res.data.user.email,
+          name: res.data.user.name,
+          id: res.data.user.id,
+        },
+        createdAt: res.data.user.createdAt,
+        expiresAt: res.data.session.expiresAt,
+      };
+
+      localStorage.setItem("session", JSON.stringify(appSession));
+      setSession(appSession);
+
+      if (isPublicRoute) navigate("/homepage", { replace: true });
+    });
+  }, []);
 
   return {
     navigate,

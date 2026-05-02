@@ -1,13 +1,12 @@
 import { FastifyInstance, FastifyRequest } from "fastify";
-import { Rooms } from "../models/game.models.js";
+import { RoomManager } from "../models/game.models.js";
 import type { WebSocket } from "ws";
+import { joinGame } from "../services/game.service.js";
 
-export const rooms: Rooms = {};
-
-const roomSockets: Record<string, Record<string, WebSocket>> = {};
+export const roomManager = new RoomManager();
 
 function broadcastRoom(roomId: string, message: unknown) {
-  const sockets = roomSockets[roomId];
+  const sockets = roomManager.sockets[roomId];
   if (!sockets) return;
 
   for (const socket of Object.values(sockets)) {
@@ -25,30 +24,23 @@ export async function gameSocket(fastify: FastifyInstance) {
       const { roomId } = request.params as { roomId: string };
 
       const userId = request.user.id;
-      const userName = request.user.name;
+      const name = request.user.name;
 
       socket.on("message", (raw: string) => {
         const msg = JSON.parse(raw.toString());
 
         switch (msg.type) {
-          case "create":
-            //créer la room
-            break;
-
-          case "join":
-            if (!roomSockets[roomId]) {
-              roomSockets[roomId] = {};
+          case "join": {
+            if (!roomManager.rooms[roomId]) {
+              socket.send(JSON.stringify({ error: "Room not found" }));
+              return;
             }
 
-            roomSockets[roomId][userId] = socket;
+            const data = joinGame(userId, name, roomId, socket, roomManager);
 
-            rooms[roomId].players[userId] = { name: userName, score: 0 };
-            rooms[roomId].answers[userId] = null;
-
-            broadcastRoom(roomId, {
-              playerNumber: Object.keys(rooms[roomId].players).length,
-            });
+            broadcastRoom(roomId, data);
             break;
+          }
 
           case "submit_answer":
             //ajouter réponse

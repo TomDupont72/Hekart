@@ -16,6 +16,7 @@ export default function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/homepage" element={<Homepage />} />
       <Route path="/game/:roomId" element={<Game />} />
+      <Route path="/game" element={<Game />} />
       <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
   );

@@ -1,14 +1,28 @@
+import type { WebSocket } from "ws";
+
 type Player = {
   name: string;
   score: number;
 };
 
-type Room = {
-  status: "lobby" | "playing" | "results" | "finished";
-  round: number;
-  players: Record<string, Player>;
-  answers: Record<string, number | null>;
-  questions: string[];
-};
+export class Room {
+  status: "lobby" | "playing" | "results" | "finished" = "lobby";
+  round: number = 0;
+  players: Record<string, Player> = {};
+  anwsers: Record<string, number | null> = {};
+  questions: string[] = [];
 
-export type Rooms = Record<string, Room>;
+  addPlayer(userId: string, name: string) {
+    this.players[userId] = { name, score: 0 };
+    this.anwsers[userId] = null;
+  }
+
+  countPlayers() {
+    return Object.keys(this.players).length;
+  }
+}
+
+export class RoomManager {
+  rooms: Record<string, Room> = {};
+  sockets: Record<string, Record<string, WebSocket>> = {};
+}

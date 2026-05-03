@@ -6,6 +6,7 @@ import {
   joinGame,
   startRound,
   submitAnswer,
+  ROUND_DURATION,
 } from "../services/game.service.js";
 import { SubmitAnswerSchema } from "../modules/game.schemas.js";
 
@@ -63,6 +64,10 @@ export async function gameSocket(fastify: FastifyInstance) {
             const data = startRound(roomId);
 
             broadcastRoom(roomId, data);
+            setTimeout(() => {
+              const data = endRound(roomId);
+              broadcastRoom(roomId, data);
+            }, ROUND_DURATION);
             break;
           }
 

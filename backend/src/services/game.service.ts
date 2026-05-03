@@ -6,7 +6,7 @@ import { getRandomDistinct } from "../utils.js";
 import { roomManager } from "../sockets/game.js";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-const ROUND_DURATION = 20000;
+export const ROUND_DURATION = 20 * 1000;
 
 const nanoid = customAlphabet(ALPHABET, 6);
 
@@ -46,15 +46,13 @@ export function startRound(roomId: string) {
   roomManager.rooms[roomId].clearAnswers();
   roomManager.rooms[roomId].roundEndsAt = Date.now() + ROUND_DURATION;
 
-  roomManager.rooms[roomId].roundTimer = setTimeout(() => {
-    endRound(roomId);
-  }, ROUND_DURATION);
-
   return {
     status: roomManager.rooms[roomId].status,
     question:
       roomManager.rooms[roomId].questions[roomManager.rooms[roomId].round],
     submitted: false,
+    roundEndsAt: roomManager.rooms[roomId].roundEndsAt,
+    roundDuration: ROUND_DURATION / 1000,
   };
 }
 
@@ -65,6 +63,9 @@ export function endRound(roomId: string) {
 
   return {
     status: roomManager.rooms[roomId].status,
+    question:
+      roomManager.rooms[roomId].questions[roomManager.rooms[roomId].round - 1],
+    mean: roomManager.rooms[roomId].mean,
     players: roomManager.rooms[roomId].players,
     answers: roomManager.rooms[roomId].answers,
   };

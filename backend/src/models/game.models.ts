@@ -22,6 +22,7 @@ export class Room {
   questions: Question[] = [];
   roundEndsAt: number | null = null;
   roundTimer: NodeJS.Timeout | null = null;
+  mean: number = 0;
 
   addPlayer(userId: string, name: string) {
     this.players[userId] = { name, score: 0 };
@@ -40,13 +41,16 @@ export class Room {
     const mean =
       answersArray.reduce((sum, val) => sum + val, 0) / answersArray.length;
 
+    this.mean = mean;
+
     Object.keys(this.answers).forEach((key) => {
       if (this.answers[key] === null) {
         this.players[key].score = 0;
       } else {
-        this.players[key].score =
+        this.players[key].score = Math.round(
           MAX_SCORE *
-          Math.exp((-RATIO * Math.abs(this.answers[key] - mean)) / mean);
+            Math.exp((-RATIO * Math.abs(this.answers[key] - mean)) / mean),
+        );
       }
     });
   }

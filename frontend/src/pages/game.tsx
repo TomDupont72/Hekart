@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useGame } from "@/hooks/useGame";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import Timer from "@/components/custom/timer";
 
 export default function Game() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -21,8 +22,6 @@ export default function Game() {
     submitAnswer,
     loading,
   } = useGame(roomId);
-
-  console.log(room);
 
   if (loading) {
     return (
@@ -134,11 +133,17 @@ export default function Game() {
                   {room.question?.question}{" "}
                   {room.question?.unit && `(${room.question.unit})`}
                 </h1>
-                <Input
-                  type="text"
-                  placeholder="Réponse"
-                  onChange={(e) => setAnswer(e.target.value)}
-                />
+                <div className="flex flex-1 flex-row items-center gap-8">
+                  <Input
+                    type="text"
+                    placeholder="Réponse"
+                    onChange={(e) => setAnswer(e.target.value)}
+                  />
+                  <Timer
+                    endTime={room.roundEndsAt}
+                    totalSeconds={room.roundDuration}
+                  />
+                </div>
                 <Button type="submit" className="w-60 h-20 text-lg">
                   Valider
                 </Button>
@@ -172,6 +177,30 @@ export default function Game() {
             </CardContent>
           </Card>
         </motion.div>
+      </main>
+    );
+  }
+
+  if (room.status === "results") {
+    return (
+      <main className="flex h-screen flex-col items-center justify-center gap-6">
+        <h1>{room.question.question}</h1>
+        <p>
+          Réponse : {room.question.answer} {room.question.unit}
+        </p>
+        <p>
+          Moyenne : {room.mean} {room.question.unit}
+        </p>
+        {Object.keys(room?.players ?? {}).map((key) => (
+          <Card
+            className="flew flex-row items-center justify-center gap-4"
+            key={key}
+          >
+            <h1>{room.players[key].name}</h1>
+            <p>{room.answers[key]}</p>
+            <p>{room.players[key].score}</p>
+          </Card>
+        ))}
       </main>
     );
   }

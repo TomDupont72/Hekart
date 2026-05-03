@@ -1,4 +1,5 @@
 export type Room =
+  | { status: "none" }
   | {
       status: "lobby";
       playerNumber: number;

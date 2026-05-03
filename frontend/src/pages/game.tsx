@@ -184,13 +184,18 @@ export default function Game() {
   if (room.status === "results") {
     return (
       <main className="flex h-screen flex-col items-center justify-center gap-6">
-        <h1>{room.question.question}</h1>
-        <p>
-          Réponse : {room.question.answer} {room.question.unit}
-        </p>
-        <p>
-          Moyenne : {room.mean} {room.question.unit}
-        </p>
+        <Card className="p-4">
+          <h1>{room.question.question}</h1>
+        </Card>
+        <Card className="flex flex-col justify-center items-center p-4">
+          <p>
+            Réponse : {room.question.answer} {room.question.unit}
+          </p>
+          <div className="h-[2px] w-11/12 bg-[var(--muted-foreground)]" />
+          <p>
+            Moyenne : {room.mean} {room.question.unit}
+          </p>
+        </Card>
         {Object.keys(room?.players ?? {}).map((key) => (
           <Card
             className="flew flex-row items-center justify-center gap-4"

@@ -16,7 +16,7 @@ export function useGame(roomId?: string | null) {
 
   const [joinRoomId, setJoinRoomId] = useState<string>("");
   const [answer, setAnswer] = useState<string>("");
-  const [room, setRoom] = useState<Room>({ status: "lobby" });
+  const [room, setRoom] = useState<Room>({ status: "lobby", playerNumber: 0 });
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -101,7 +101,7 @@ export function useGame(roomId?: string | null) {
 
   async function createGame() {
     setFormError(null);
-    setRoom({ status: "lobby" });
+    setRoom({ status: "lobby", playerNumber: 0 });
 
     await createGameMutation.mutateAsync();
   }
@@ -109,7 +109,7 @@ export function useGame(roomId?: string | null) {
   async function joinGame(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setFormError(null);
-    setRoom({ status: "lobby" });
+    setRoom({ status: "lobby", playerNumber: 0 });
 
     await joinGameMutation.mutateAsync(joinRoomId);
   }
@@ -129,7 +129,7 @@ export function useGame(roomId?: string | null) {
 
   useEffect(() => {
     if (!roomId) {
-      setRoom({});
+      setRoom({ status: "none" });
       return;
     }
 

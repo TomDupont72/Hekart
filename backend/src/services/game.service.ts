@@ -6,7 +6,7 @@ import { getRandomDistinct } from "../utils.js";
 import { roomManager } from "../sockets/game.js";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-export const ROUND_DURATION = 20 * 1000;
+export const ROUND_DURATION = 10 * 1000;
 
 const nanoid = customAlphabet(ALPHABET, 6);
 

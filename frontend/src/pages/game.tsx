@@ -6,6 +6,7 @@ import { useGame } from "@/hooks/useGame";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import Timer from "@/components/custom/timer";
+import { Badge } from "@/components/ui/badge";
 
 export default function Game() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -187,24 +188,42 @@ export default function Game() {
         <Card className="p-4">
           <h1>{room.question.question}</h1>
         </Card>
-        <Card className="flex flex-col justify-center items-center p-4">
+        <Badge
+          variant="neutral"
+          className="flex flex-col justify-center items-center p-4"
+        >
           <p>
             Réponse : {room.question.answer} {room.question.unit}
           </p>
-          <div className="h-[2px] w-11/12 bg-[var(--muted-foreground)]" />
+          <div className="h-[2px] w-11/12 bg-gray-400" />
           <p>
             Moyenne : {room.mean} {room.question.unit}
           </p>
-        </Card>
+        </Badge>
         {Object.keys(room?.players ?? {}).map((key) => (
-          <Card
-            className="flew flex-row items-center justify-center gap-4"
+          <Badge
+            variant="neutral"
+            className="flex flex-row items-center justify-between gap-4 p-4"
             key={key}
           >
-            <h1>{room.players[key].name}</h1>
-            <p>{room.answers[key]}</p>
-            <p>{room.players[key].score}</p>
-          </Card>
+            <div className="flex flex-row items-center justify-center gap-4">
+              <Badge>
+                <h1 className="text-xl">1</h1>
+              </Badge>
+              <h1>{room.players[key].name}</h1>
+            </div>
+            <div className="flex flex-row items-center justify-center gap-4">
+              <p>
+                {room.answers[key]} {room.question.unit}
+              </p>
+              <div className="w-[2px] h-11/12 bg-gray-400" />
+              <div className="flex flex-col items-center justify-center gap-4">
+                <h1 className="text-main">+ {room.players[key].score}</h1>
+                <div className="h-[2px] w-11/12 bg-gray-400" />
+                <p>{room.players[key].score} pts</p>
+              </div>
+            </div>
+          </Badge>
         ))}
       </main>
     );

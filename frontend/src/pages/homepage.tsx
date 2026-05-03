@@ -9,10 +9,10 @@ import { useNavigate } from "react-router-dom";
 export default function Homepage() {
   const navigate = useNavigate();
 
-  const { session, logOut, loading } = useAuth();
-  const { createGame } = useGame();
+  const { session, logOut, loading: authLoading } = useAuth();
+  const { createGame, loading: gameLoading } = useGame();
 
-  if (loading) {
+  if (authLoading || gameLoading) {
     return (
       <main className="flex h-screen justify-center items-center">
         <Spinner className="size-8" />
@@ -48,7 +48,7 @@ export default function Homepage() {
       </motion.div>
       <Button
         className="absolute bottom-5 right-5"
-        disabled={loading}
+        disabled={authLoading}
         onClick={logOut}
       >
         Se déconnecter

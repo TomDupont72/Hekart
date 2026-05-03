@@ -34,3 +34,13 @@ export function socketSubmitAnswer(socket: WebSocket, answer: number) {
     }),
   );
 }
+
+export function socketEndGame(socket: WebSocket) {
+  if (socket.readyState !== WebSocket.OPEN) return;
+
+  socket.send(
+    JSON.stringify({
+      type: "end_game",
+    }),
+  );
+}

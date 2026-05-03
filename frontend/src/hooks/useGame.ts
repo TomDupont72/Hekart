@@ -2,6 +2,7 @@ import { apiCreateGame } from "@/api/game";
 import type { Room } from "@/models/game.models";
 import { JoinGameSchema, SubmitAnswerSchema } from "@/modules/game.schemas";
 import {
+  socketEndGame,
   socketRoomCreate,
   socketRoomJoin,
   socketStartRound,
@@ -16,7 +17,11 @@ export function useGame(roomId?: string | null) {
 
   const [joinRoomId, setJoinRoomId] = useState<string>("");
   const [answer, setAnswer] = useState<string>("");
-  const [room, setRoom] = useState<Room>({ status: "lobby", playerNumber: 0 });
+  const [room, setRoom] = useState<Room>({
+    status: "lobby",
+    playerNumber: 0,
+    round: 0,
+  });
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -99,9 +104,26 @@ export function useGame(roomId?: string | null) {
     },
   });
 
+  const endGameMutation = useMutation({
+    mutationFn: async (socket: WebSocket | null) => {
+      if (!socket) {
+        throw new Error("Pas de socket.");
+      }
+
+      socketEndGame(socket);
+    },
+    onSuccess: () => {
+      navigate("/homepage");
+    },
+    onError: (error) => {
+      console.error("[useGame.endGame] failed", error);
+      setFormError("Impossible de terminer la partie.");
+    },
+  });
+
   async function createGame() {
     setFormError(null);
-    setRoom({ status: "lobby", playerNumber: 0 });
+    setRoom({ status: "lobby", playerNumber: 0, round: 0 });
 
     await createGameMutation.mutateAsync();
   }
@@ -109,7 +131,7 @@ export function useGame(roomId?: string | null) {
   async function joinGame(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setFormError(null);
-    setRoom({ status: "lobby", playerNumber: 0 });
+    setRoom({ status: "lobby", playerNumber: 0, round: 0 });
 
     await joinGameMutation.mutateAsync(joinRoomId);
   }
@@ -127,9 +149,15 @@ export function useGame(roomId?: string | null) {
     await submitAnswerMutation.mutateAsync({ socket, answer });
   }
 
+  async function endGame() {
+    setFormError(null);
+
+    await endGameMutation.mutateAsync(socket);
+  }
+
   useEffect(() => {
     if (!roomId) {
-      setRoom({ status: "none" });
+      setRoom({ status: "none", round: 0 });
       return;
     }
 
@@ -143,6 +171,11 @@ export function useGame(roomId?: string | null) {
 
       setRoom(msg);
     };
+
+    return () => {
+      socket.close();
+      setSocket(null);
+    };
   }, [roomId]);
 
   return {
@@ -154,6 +187,9 @@ export function useGame(roomId?: string | null) {
     setAnswer,
     startRound,
     submitAnswer,
-    loading: room.status === "lobby" && !room?.playerNumber,
+    endGame,
+    loading:
+      createGameMutation.isPending ||
+      (room.status === "lobby" && !room?.playerNumber),
   };
 }

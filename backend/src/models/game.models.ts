@@ -1,4 +1,5 @@
 import type { WebSocket } from "ws";
+import { rankDict } from "../utils.js";
 
 const MAX_SCORE = 100;
 const RATIO = 0.3;
@@ -6,6 +7,9 @@ const RATIO = 0.3;
 type Player = {
   name: string;
   score: number;
+  totalScore: number;
+  rank: number;
+  lastRank: number;
 };
 
 type Question = {
@@ -25,7 +29,13 @@ export class Room {
   mean: number = 0;
 
   addPlayer(userId: string, name: string) {
-    this.players[userId] = { name, score: 0 };
+    this.players[userId] = {
+      name,
+      score: 0,
+      totalScore: 0,
+      rank: 0,
+      lastRank: 0,
+    };
     this.answers[userId] = null;
   }
 
@@ -34,14 +44,22 @@ export class Room {
   }
 
   calculateScores() {
+    const question = this.questions[this.round];
+    if (!question) return;
+
     const answersArray = Object.values(this.answers).filter(
-      (item) => item !== null,
+      (item): item is number =>
+        item !== null &&
+        item >= question.answer * 0.01 &&
+        item <= question.answer * 100,
     );
 
     const mean =
-      answersArray.reduce((sum, val) => sum + val, 0) / answersArray.length;
+      answersArray.length > 0
+        ? answersArray.reduce((sum, val) => sum + val, 0) / answersArray.length
+        : 0;
 
-    this.mean = mean;
+    this.mean = Math.round(mean * 100) / 100;
 
     Object.keys(this.answers).forEach((key) => {
       if (this.answers[key] === null) {
@@ -51,6 +69,7 @@ export class Room {
           MAX_SCORE *
             Math.exp((-RATIO * Math.abs(this.answers[key] - mean)) / mean),
         );
+        this.players[key].totalScore += this.players[key].score;
       }
     });
   }
@@ -63,6 +82,26 @@ export class Room {
 
   countAnswersNotSubmitted() {
     return Object.values(this.answers).filter((item) => item == null).length;
+  }
+
+  calculateRank() {
+    const ranks = rankDict(
+      Object.fromEntries(
+        Object.keys(this.players).map((key) => {
+          return [key, this.players[key].totalScore];
+        }),
+      ),
+    );
+
+    Object.keys(this.players).forEach((key) => {
+      this.players[key].rank = ranks[key];
+    });
+  }
+
+  updateLastRank() {
+    Object.keys(this.players).forEach((key) => {
+      this.players[key].lastRank = this.players[key].rank;
+    });
   }
 }
 

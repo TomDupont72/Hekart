@@ -1,8 +1,9 @@
 export type Room =
-  | { status: "none" }
+  | { status: "none"; round: number }
   | {
       status: "lobby";
       playerNumber: number;
+      round: number;
     }
   | {
       status: "playing";
@@ -14,6 +15,7 @@ export type Room =
       submitted: false;
       roundEndsAt: number;
       roundDuration: number;
+      round: number;
     }
   | {
       status: "playing";
@@ -24,6 +26,7 @@ export type Room =
       };
       submitted: true;
       answerNotSubmittedNumber: number;
+      round: number;
     }
   | {
       status: "results";
@@ -38,7 +41,12 @@ export type Room =
         {
           name: string;
           score: number;
+          totalScore: number;
+          rank: number;
+          lastRank: number;
         }
       >;
       answers: Record<string, number | null>;
+      round: number;
+      totalRounds: number;
     };

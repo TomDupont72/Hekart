@@ -7,6 +7,7 @@ import {
   startRound,
   submitAnswer,
   ROUND_DURATION,
+  endGame,
 } from "../services/game.service.js";
 import { SubmitAnswerSchema } from "../modules/game.schemas.js";
 
@@ -64,7 +65,7 @@ export async function gameSocket(fastify: FastifyInstance) {
             const data = startRound(roomId);
 
             broadcastRoom(roomId, data);
-            setTimeout(() => {
+            roomManager.rooms[roomId].roundTimer = setTimeout(() => {
               const data = endRound(roomId);
               broadcastRoom(roomId, data);
             }, ROUND_DURATION);
@@ -97,7 +98,25 @@ export async function gameSocket(fastify: FastifyInstance) {
 
             const data = submitAnswer(roomId, userId, result.data.answer);
 
+            if (data.answerNotSubmittedNumber === 0) {
+              if (roomManager.rooms[roomId].roundTimer) {
+                clearTimeout(roomManager.rooms[roomId].roundTimer);
+                roomManager.rooms[roomId].roundTimer = null;
+              }
+
+              const data = endRound(roomId);
+              broadcastRoom(roomId, data);
+              break;
+            }
+
             broadcastRoomOnSubmitted(roomId, data);
+            break;
+          }
+
+          case "end_game": {
+            endGame(roomId, userId);
+            socket.close();
+
             break;
           }
         }

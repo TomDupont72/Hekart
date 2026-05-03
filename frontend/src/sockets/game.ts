@@ -12,6 +12,25 @@ export function socketRoomJoin(socket: WebSocket) {
       }),
     );
   };
+}
 
-  return socket;
+export function socketStartRound(socket: WebSocket) {
+  if (socket.readyState !== WebSocket.OPEN) return;
+
+  socket.send(
+    JSON.stringify({
+      type: "start_round",
+    }),
+  );
+}
+
+export function socketSubmitAnswer(socket: WebSocket, answer: number) {
+  if (socket.readyState !== WebSocket.OPEN) return;
+
+  socket.send(
+    JSON.stringify({
+      type: "submit_answer",
+      answer: answer,
+    }),
+  );
 }

@@ -3,10 +3,12 @@ import { Room, RoomManager } from "../models/game.models.js";
 import type { WebSocket } from "ws";
 import { countQuestions, getQuestionsByIds } from "../db/questions.db.js";
 import { getRandomDistinct } from "../utils.js";
+import { roomManager } from "../sockets/game.js";
 
-const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+const ROUND_DURATION = 20000;
 
-const nanoid = customAlphabet(alphabet, 6);
+const nanoid = customAlphabet(ALPHABET, 6);
 
 export async function createGame(roomManager: RoomManager) {
   const roomId = nanoid();
@@ -34,6 +36,49 @@ export function joinGame(
   roomManager.rooms[roomId].addPlayer(userId, name);
 
   return {
+    status: roomManager.rooms[roomId].status,
     playerNumber: roomManager.rooms[roomId].countPlayers(),
+  };
+}
+
+export function startRound(roomId: string) {
+  roomManager.rooms[roomId].status = "playing";
+  roomManager.rooms[roomId].clearAnswers();
+  roomManager.rooms[roomId].roundEndsAt = Date.now() + ROUND_DURATION;
+
+  roomManager.rooms[roomId].roundTimer = setTimeout(() => {
+    endRound(roomId);
+  }, ROUND_DURATION);
+
+  return {
+    status: roomManager.rooms[roomId].status,
+    question:
+      roomManager.rooms[roomId].questions[roomManager.rooms[roomId].round],
+    submitted: false,
+  };
+}
+
+export function endRound(roomId: string) {
+  roomManager.rooms[roomId].status = "results";
+  roomManager.rooms[roomId].calculateScores();
+  roomManager.rooms[roomId].round += 1;
+
+  return {
+    status: roomManager.rooms[roomId].status,
+    players: roomManager.rooms[roomId].players,
+    answers: roomManager.rooms[roomId].answers,
+  };
+}
+
+export function submitAnswer(roomId: string, userId: string, answer: number) {
+  roomManager.rooms[roomId].answers[userId] = answer;
+
+  return {
+    status: roomManager.rooms[roomId].status,
+    question:
+      roomManager.rooms[roomId].questions[roomManager.rooms[roomId].round],
+    submitted: true,
+    answerNotSubmittedNumber:
+      roomManager.rooms[roomId].countAnswersNotSubmitted(),
   };
 }

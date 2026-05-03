@@ -5,6 +5,7 @@ import { apiLogOut, apiSignIn, apiSignUp } from "@/api/auth";
 import { RegisterSchema, SignInSchema } from "@/modules/auth.schemas";
 import { useMutation } from "@tanstack/react-query";
 import type { AppSession } from "@/models/auth.models";
+import { SubmitAnswerSchema } from "@/modules/game.schemas";
 
 export function useAuth() {
   const navigate = useNavigate();
@@ -178,8 +179,6 @@ export function useAuth() {
         if (!isPublicRoute) navigate("/login", { replace: true });
         return;
       }
-
-      console.log("coucou");
 
       const appSession: AppSession = {
         user: {

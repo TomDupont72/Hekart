@@ -1,7 +1,12 @@
 import { apiCreateGame } from "@/api/game";
 import type { Room } from "@/models/game.models";
-import { JoinGameSchema } from "@/modules/game.schemas";
-import { socketRoomCreate, socketRoomJoin } from "@/sockets/game";
+import { JoinGameSchema, SubmitAnswerSchema } from "@/modules/game.schemas";
+import {
+  socketRoomCreate,
+  socketRoomJoin,
+  socketStartRound,
+  socketSubmitAnswer,
+} from "@/sockets/game";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +15,9 @@ export function useGame(roomId?: string | null) {
   const navigate = useNavigate();
 
   const [joinRoomId, setJoinRoomId] = useState<string>("");
-  const [room, setRoom] = useState<Room>({ playerNumber: 0 });
+  const [answer, setAnswer] = useState<string>("");
+  const [room, setRoom] = useState<Room>({ status: "lobby" });
+  const [socket, setSocket] = useState<WebSocket | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
   const createGameMutation = useMutation({
@@ -51,8 +58,50 @@ export function useGame(roomId?: string | null) {
     },
   });
 
+  const startRoundMutation = useMutation({
+    mutationFn: async (socket: WebSocket | null) => {
+      if (!socket) {
+        throw new Error("Pas de socket.");
+      }
+
+      socketStartRound(socket);
+    },
+    onError: (error) => {
+      console.error("[useGame.startRound] failed", error);
+      setFormError("Impossible de commencer le round.");
+    },
+  });
+
+  const submitAnswerMutation = useMutation({
+    mutationFn: async ({
+      socket,
+      answer,
+    }: {
+      socket: WebSocket | null;
+      answer: string;
+    }) => {
+      if (!socket) {
+        throw new Error("Pas de socket.");
+      }
+
+      const formData = {
+        answer: Number(answer),
+      };
+
+      const result = SubmitAnswerSchema.safeParse(formData);
+
+      if (!result.success) {
+        const firstIssue = result.error.issues[0];
+        throw new Error(firstIssue?.message ?? "Formulaire invalide.");
+      }
+
+      socketSubmitAnswer(socket, result.data.answer);
+    },
+  });
+
   async function createGame() {
     setFormError(null);
+    setRoom({ status: "lobby" });
 
     await createGameMutation.mutateAsync();
   }
@@ -60,25 +109,51 @@ export function useGame(roomId?: string | null) {
   async function joinGame(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setFormError(null);
+    setRoom({ status: "lobby" });
 
     await joinGameMutation.mutateAsync(joinRoomId);
   }
 
+  async function startRound() {
+    setFormError(null);
+
+    await startRoundMutation.mutateAsync(socket);
+  }
+
+  async function submitAnswer(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setFormError(null);
+
+    await submitAnswerMutation.mutateAsync({ socket, answer });
+  }
+
   useEffect(() => {
-    if (!roomId) return;
+    if (!roomId) {
+      setRoom({});
+      return;
+    }
 
     const socket = socketRoomCreate(roomId);
+    setSocket(socket);
 
     socketRoomJoin(socket);
 
     socket.onmessage = (event) => {
       const msg = JSON.parse(event.data);
 
-      console.log(msg);
-
       setRoom(msg);
     };
   }, [roomId]);
 
-  return { room, createGame, joinGame, setJoinRoomId };
+  return {
+    room,
+    createGame,
+    joinGame,
+    setJoinRoomId,
+    answer,
+    setAnswer,
+    startRound,
+    submitAnswer,
+    loading: room.status === "lobby" && !room?.playerNumber,
+  };
 }

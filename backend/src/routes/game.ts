@@ -9,8 +9,6 @@ export async function gameRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const data = await createGame(roomManager);
 
-      console.log(data);
-
       return reply.send({ data });
     },
   );

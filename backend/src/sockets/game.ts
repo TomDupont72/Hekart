@@ -56,7 +56,6 @@ export async function gameSocket(fastify: FastifyInstance) {
         switch (msg.type) {
           case "join": {
             const data = joinGame(userId, name, roomId, socket, roomManager);
-            console.log(data);
             broadcastRoom(roomId, data);
             break;
           }
@@ -95,13 +94,9 @@ export async function gameSocket(fastify: FastifyInstance) {
               return;
             }
 
-            console.log(msg);
-
             const formData = {
               answer: Number(msg.answer),
             };
-
-            console.log(formData);
 
             const result = SubmitAnswerSchema.safeParse(formData);
 
@@ -114,8 +109,6 @@ export async function gameSocket(fastify: FastifyInstance) {
               );
               return;
             }
-
-            console.log(result.data);
 
             const data = submitAnswer(
               roomId,

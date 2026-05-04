@@ -168,7 +168,6 @@ export function useGame(roomId?: string | null) {
 
     socket.onmessage = (event) => {
       const msg = JSON.parse(event.data);
-      console.log(msg);
 
       setRoom(msg);
     };

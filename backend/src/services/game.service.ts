@@ -5,8 +5,8 @@ import { countQuestions, getQuestionsByIds } from "../db/questions.db.js";
 import { getRandomDistinct } from "../utils.js";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-export const ROUND_DURATION = 10 * 1000;
-const ROUND_NUMBER = 2;
+export const ROUND_DURATION = 20 * 1000;
+const ROUND_NUMBER = 10;
 
 const nanoid = customAlphabet(ALPHABET, 6);
 

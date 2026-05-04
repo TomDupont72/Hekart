@@ -2,7 +2,7 @@ import type { WebSocket } from "ws";
 import { rankDict } from "../utils.js";
 
 const MAX_SCORE = 100;
-const RATIO = 0.3;
+const RATIO = 5;
 
 type Player = {
   name: string;
@@ -47,29 +47,35 @@ export class Room {
     const question = this.questions[this.round];
     if (!question) return;
 
-    const answersArray = Object.values(this.answers).filter(
-      (item): item is number =>
-        item !== null &&
-        item >= question.answer * 0.01 &&
-        item <= question.answer * 100,
-    );
+    if (Object.keys(this.players).length === 2) {
+      this.mean = this.questions[this.round].answer;
+    } else {
+      const answersArray = Object.values(this.answers).filter(
+        (item): item is number =>
+          item !== null &&
+          item >= question.answer * 0.01 &&
+          item <= question.answer * 100,
+      );
 
-    const mean =
-      answersArray.length > 0
-        ? answersArray.reduce((sum, val) => sum + val, 0) / answersArray.length
-        : 0;
+      const mean =
+        answersArray.length > 0
+          ? answersArray.reduce((sum, val) => sum + val, 0) /
+            answersArray.length
+          : 0;
 
-    this.mean = Math.round(mean * 100) / 100;
-
-    console.log(this.answers);
+      this.mean = Math.round(mean * 100) / 100;
+    }
 
     Object.keys(this.answers).forEach((key) => {
-      if (this.answers[key] === null) {
+      if (this.answers[key] === null || this.answers[key] === 0) {
         this.players[key].score = 0;
       } else {
+        const diff = Math.max(
+          this.answers[key] / this.mean,
+          this.mean / this.answers[key],
+        );
         this.players[key].score = Math.round(
-          MAX_SCORE *
-            Math.exp((-RATIO * Math.abs(this.answers[key] - mean)) / mean),
+          MAX_SCORE / (1 + RATIO * (diff - 1) ** 2),
         );
       }
 

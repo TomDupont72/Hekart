@@ -30,7 +30,6 @@ export default function Game() {
   const [showNewRank, setShowNewRank] = useState(false);
 
   useEffect(() => {
-    console.log(room);
     if (room?.status !== "results") {
       setAnswer(null);
       setShowNewRank(false);
@@ -228,10 +227,14 @@ export default function Game() {
           <p>
             Réponse : {room.question.answer} {room.question.unit}
           </p>
-          <div className="self-stretch h-[2px] bg-gray-400" />
-          <p>
-            Moyenne : {room.mean} {room.question.unit}
-          </p>
+          {Object.keys(room.players).length === 2 ? null : (
+            <>
+              <div className="self-stretch h-[2px] bg-gray-400" />
+              <p>
+                Moyenne : {room.mean} {room.question.unit}
+              </p>
+            </>
+          )}
         </Badge>
         <div className="flex w-full flex-col items-center justify-center gap-2">
           {Object.keys(room.players)

@@ -16,7 +16,7 @@ export function useGame(roomId?: string | null) {
   const navigate = useNavigate();
 
   const [joinRoomId, setJoinRoomId] = useState<string>("");
-  const [answer, setAnswer] = useState<string>("");
+  const [answer, setAnswer] = useState<number | null>(null);
   const [room, setRoom] = useState<Room>({
     status: "lobby",
     playerNumber: 0,
@@ -83,14 +83,14 @@ export function useGame(roomId?: string | null) {
       answer,
     }: {
       socket: WebSocket | null;
-      answer: string;
+      answer: number | null;
     }) => {
       if (!socket) {
         throw new Error("Pas de socket.");
       }
 
       const formData = {
-        answer: Number(answer),
+        answer: answer,
       };
 
       const result = SubmitAnswerSchema.safeParse(formData);
@@ -168,6 +168,7 @@ export function useGame(roomId?: string | null) {
 
     socket.onmessage = (event) => {
       const msg = JSON.parse(event.data);
+      console.log(msg);
 
       setRoom(msg);
     };
@@ -191,5 +192,6 @@ export function useGame(roomId?: string | null) {
     loading:
       createGameMutation.isPending ||
       (room.status === "lobby" && !room?.playerNumber),
+    formError,
   };
 }

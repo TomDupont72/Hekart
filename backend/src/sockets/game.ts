@@ -56,33 +56,52 @@ export async function gameSocket(fastify: FastifyInstance) {
         switch (msg.type) {
           case "join": {
             const data = joinGame(userId, name, roomId, socket, roomManager);
-
+            console.log(data);
             broadcastRoom(roomId, data);
             break;
           }
 
           case "start_round": {
-            const data = startRound(roomId);
+            if (!roomManager.rooms[roomId].players[userId]) {
+              socket.send(JSON.stringify({ error: "Access forbidden" }));
+              return;
+            }
+
+            const data = startRound(roomId, roomManager);
 
             broadcastRoom(roomId, data);
             roomManager.rooms[roomId].roundTimer = setTimeout(() => {
-              const data = endRound(roomId);
+              const data = endRound(roomId, roomManager);
               broadcastRoom(roomId, data);
             }, ROUND_DURATION);
             break;
           }
 
           case "end_round": {
-            const data = endRound(roomId);
+            if (!roomManager.rooms[roomId].players[userId]) {
+              socket.send(JSON.stringify({ error: "Access forbidden" }));
+              return;
+            }
+
+            const data = endRound(roomId, roomManager);
 
             broadcastRoom(roomId, data);
             break;
           }
 
           case "submit_answer": {
+            if (!roomManager.rooms[roomId].players[userId]) {
+              socket.send(JSON.stringify({ error: "Access forbidden" }));
+              return;
+            }
+
+            console.log(msg);
+
             const formData = {
               answer: Number(msg.answer),
             };
+
+            console.log(formData);
 
             const result = SubmitAnswerSchema.safeParse(formData);
 
@@ -96,7 +115,14 @@ export async function gameSocket(fastify: FastifyInstance) {
               return;
             }
 
-            const data = submitAnswer(roomId, userId, result.data.answer);
+            console.log(result.data);
+
+            const data = submitAnswer(
+              roomId,
+              userId,
+              result.data.answer,
+              roomManager,
+            );
 
             if (data.answerNotSubmittedNumber === 0) {
               if (roomManager.rooms[roomId].roundTimer) {
@@ -104,7 +130,7 @@ export async function gameSocket(fastify: FastifyInstance) {
                 roomManager.rooms[roomId].roundTimer = null;
               }
 
-              const data = endRound(roomId);
+              const data = endRound(roomId, roomManager);
               broadcastRoom(roomId, data);
               break;
             }
@@ -114,7 +140,12 @@ export async function gameSocket(fastify: FastifyInstance) {
           }
 
           case "end_game": {
-            endGame(roomId, userId);
+            if (!roomManager.rooms[roomId].players[userId]) {
+              socket.send(JSON.stringify({ error: "Access forbidden" }));
+              return;
+            }
+
+            endGame(roomId, userId, roomManager);
             socket.close();
 
             break;

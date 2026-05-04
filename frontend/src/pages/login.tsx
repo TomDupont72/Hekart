@@ -9,7 +9,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-  const { setEmailSI, setPasswordSI, loading, error, signIn } = useAuth();
+  const { setEmailSI, setPasswordSI, loading, signIn } = useAuth();
   const navigate = useNavigate();
 
   return (

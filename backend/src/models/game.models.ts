@@ -19,7 +19,7 @@ type Question = {
 };
 
 export class Room {
-  status: "lobby" | "playing" | "results" | "finished" = "lobby";
+  status: "lobby" | "playing" | "results" = "lobby";
   round: number = 0;
   players: Record<string, Player> = {};
   answers: Record<string, number | null> = {};
@@ -61,6 +61,8 @@ export class Room {
 
     this.mean = Math.round(mean * 100) / 100;
 
+    console.log(this.answers);
+
     Object.keys(this.answers).forEach((key) => {
       if (this.answers[key] === null) {
         this.players[key].score = 0;
@@ -69,8 +71,9 @@ export class Room {
           MAX_SCORE *
             Math.exp((-RATIO * Math.abs(this.answers[key] - mean)) / mean),
         );
-        this.players[key].totalScore += this.players[key].score;
       }
+
+      this.players[key].totalScore += this.players[key].score;
     });
   }
 

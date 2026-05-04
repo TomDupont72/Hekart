@@ -1,0 +1,21 @@
+services:
+  backend:
+    build: ./backend
+    container_name: alphaforge-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NGINX_CONF: nginx.dev.conf
+    container_name: alphaforge-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

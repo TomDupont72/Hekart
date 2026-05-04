@@ -5,7 +5,7 @@ type TimerProps = React.InputHTMLAttributes<HTMLInputElement> & {
   totalSeconds: number;
 };
 
-export default function Timer({ endTime, totalSeconds, ...props }: TimerProps) {
+export default function Timer({ endTime, totalSeconds }: TimerProps) {
   const [seconds, setSeconds] = useState(
     Math.max(0, Math.round((endTime - Date.now()) / 1000)),
   );

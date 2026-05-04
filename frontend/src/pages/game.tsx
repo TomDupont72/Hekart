@@ -32,6 +32,7 @@ export default function Game() {
   useEffect(() => {
     console.log(room);
     if (room?.status !== "results") {
+      setAnswer(null);
       setShowNewRank(false);
       return;
     }
@@ -166,7 +167,13 @@ export default function Game() {
                   <Input
                     type="text"
                     placeholder="Réponse"
-                    onChange={(e) => setAnswer(e.target.value)}
+                    onChange={(e) =>
+                      setAnswer(
+                        e.target.value.trim() === ""
+                          ? null
+                          : Number(e.target.value),
+                      )
+                    }
                   />
                   <Timer
                     endTime={room.roundEndsAt}
@@ -267,7 +274,8 @@ export default function Game() {
                   </div>
                   <div className="flex flex-row items-center justify-center gap-2">
                     <p>
-                      {room.answers[key]} {room.question.unit}
+                      {room.answers[key] ?? "Pas de réponse"}{" "}
+                      {room.answers[key] === null ? null : room.question.unit}
                     </p>
                     <div className="self-stretch w-[2px] bg-gray-400" />
                     <div className="flex flex-col items-center justify-center gap-2">

@@ -1,0 +1,20 @@
+services:
+  backend:
+    image: ghcr.io/tomdupont72/hekart-backend:latest
+    env_file:
+      - /etc/hekart-api.env
+    ports:
+      - "8002:8000"
+    networks:
+      - shared-network
+    restart: unless-stopped
+
+  frontend:
+    image: ghcr.io/tomdupont72/hekart-frontend:latest
+    ports:
+      - "4200:80"
+    restart: unless-stopped
+
+networks:
+  shared-network:
+    external: true

@@ -15,7 +15,6 @@ export default function Register() {
     setPasswordR,
     setPasswordConfirmR,
     loading,
-    error,
     register,
   } = useAuth();
   const navigate = useNavigate();

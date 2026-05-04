@@ -3,11 +3,11 @@ import Fastify from "fastify";
 import rateLimit from "@fastify/rate-limit";
 import helmet from "@fastify/helmet";
 import fastifyCors from "@fastify/cors";
-import { authRoutes } from "./routes/auth";
+import { authRoutes } from "./routes/auth.js";
 import websocket from "@fastify/websocket";
-import { authGuard } from "./plugins/auth-guard";
-import { gameSocket } from "./sockets/game";
-import { gameRoutes } from "./routes/game";
+import { authGuard } from "./plugins/auth-guard.js";
+import { gameSocket } from "./sockets/game.js";
+import { gameRoutes } from "./routes/game.js";
 
 const app = Fastify({
   logger: true,

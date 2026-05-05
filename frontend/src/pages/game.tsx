@@ -205,7 +205,7 @@ export default function Game() {
                 </h1>
                 <div className="flex flex-1 flex-row items-center gap-8">
                   <Input
-                    type="text"
+                    type="number"
                     placeholder="Réponse"
                     onChange={(e) =>
                       setAnswer(

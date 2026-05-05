@@ -7,7 +7,7 @@ import Game from "./pages/game";
 
 export default function App() {
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", true);
+    document.documentElement.classList.toggle("dark", false);
   });
 
   return (

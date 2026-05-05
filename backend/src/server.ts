@@ -8,12 +8,16 @@ import websocket from "@fastify/websocket";
 import { authGuard } from "./plugins/auth-guard.js";
 import { gameSocket } from "./sockets/game.js";
 import { gameRoutes } from "./routes/game.js";
+import { RoomManager } from "./models/game.models.js";
+import { socketGuard } from "./plugins/socket-guard.js";
 
 const app = Fastify({
   logger: true,
   bodyLimit: 10 * 1024 * 1024,
   trustProxy: true,
 });
+
+app.decorate("roomManager", new RoomManager());
 
 await app.register(rateLimit, { max: 100, timeWindow: "1 minute" });
 
@@ -33,6 +37,7 @@ app.get("/api/health", async () => {
 await app.register(authRoutes, { prefix: "/api/auth" });
 
 await app.register(authGuard);
+await app.register(socketGuard);
 
 await app.register(gameRoutes, { prefix: "api/game" });
 await app.register(gameSocket, { prefix: "ws/game" });

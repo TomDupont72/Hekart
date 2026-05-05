@@ -7,13 +7,17 @@ import {
   startRound,
   submitAnswer,
   ROUND_DURATION,
-  endGame,
+  leaveGame,
+  ROUND_NUMBER,
+  setParameters,
 } from "../services/game.service.js";
 import { SubmitAnswerSchema } from "../modules/game.schemas.js";
 
-export const roomManager = new RoomManager();
-
-function broadcastRoom(roomId: string, message: unknown) {
+function broadcastRoom(
+  roomId: string,
+  roomManager: RoomManager,
+  message: unknown,
+) {
   const sockets = roomManager.sockets[roomId];
   if (!sockets) return;
 
@@ -24,7 +28,11 @@ function broadcastRoom(roomId: string, message: unknown) {
   }
 }
 
-function broadcastRoomOnSubmitted(roomId: string, message: unknown) {
+function broadcastRoomOnSubmitted(
+  roomId: string,
+  roomManager: RoomManager,
+  message: unknown,
+) {
   const sockets = roomManager.sockets[roomId];
   const answers = roomManager.rooms[roomId].answers;
   if (!sockets) return;
@@ -38,8 +46,13 @@ function broadcastRoomOnSubmitted(roomId: string, message: unknown) {
 export async function gameSocket(fastify: FastifyInstance) {
   fastify.get(
     "/room/:roomId",
-    { preHandler: [fastify.requireAuth], websocket: true },
+    {
+      preHandler: [fastify.requireAuth, fastify.requireSocket],
+      websocket: true,
+    },
     (socket: WebSocket, request: FastifyRequest) => {
+      const roomManager: RoomManager = fastify.roomManager;
+
       const { roomId } = request.params as { roomId: string };
 
       const userId = request.user.id;
@@ -48,50 +61,59 @@ export async function gameSocket(fastify: FastifyInstance) {
       socket.on("message", (raw: string) => {
         const msg = JSON.parse(raw.toString());
 
-        if (!roomManager.rooms[roomId]) {
-          socket.send(JSON.stringify({ error: "Room not found" }));
-          return;
-        }
-
         switch (msg.type) {
           case "join": {
             const data = joinGame(userId, name, roomId, socket, roomManager);
-            broadcastRoom(roomId, data);
+            broadcastRoom(roomId, roomManager, data);
+            break;
+          }
+
+          case "set_parameters": {
+            if (roomManager.rooms[roomId].status !== "lobby") {
+              socket.send(JSON.stringify({ error: "Game already started" }));
+            }
+
+            const mode = msg.mode;
+
+            // Faire la validation
+
+            setParameters(mode, roomId, roomManager);
             break;
           }
 
           case "start_round": {
-            if (!roomManager.rooms[roomId].players[userId]) {
-              socket.send(JSON.stringify({ error: "Access forbidden" }));
-              return;
+            if (roomManager.rooms[roomId].status === "playing") {
+              socket.send(JSON.stringify({ error: "Round already started" }));
             }
 
             const data = startRound(roomId, roomManager);
 
-            broadcastRoom(roomId, data);
+            broadcastRoom(roomId, roomManager, data);
             roomManager.rooms[roomId].roundTimer = setTimeout(() => {
               const data = endRound(roomId, roomManager);
-              broadcastRoom(roomId, data);
+              broadcastRoom(roomId, roomManager, data);
             }, ROUND_DURATION);
             break;
           }
 
           case "end_round": {
-            if (!roomManager.rooms[roomId].players[userId]) {
-              socket.send(JSON.stringify({ error: "Access forbidden" }));
-              return;
+            if (roomManager.rooms[roomId].status !== "playing") {
+              socket.send(JSON.stringify({ error: "Round already ended" }));
             }
 
             const data = endRound(roomId, roomManager);
 
-            broadcastRoom(roomId, data);
+            broadcastRoom(roomId, roomManager, data);
             break;
           }
 
           case "submit_answer": {
-            if (!roomManager.rooms[roomId].players[userId]) {
-              socket.send(JSON.stringify({ error: "Access forbidden" }));
-              return;
+            if (roomManager.rooms[roomId].status !== "playing") {
+              socket.send(JSON.stringify({ error: "Round already ended" }));
+            }
+
+            if (roomManager.rooms[roomId].answers[userId] !== null) {
+              socket.send(JSON.stringify({ error: "Answer already sent" }));
             }
 
             const formData = {
@@ -124,24 +146,31 @@ export async function gameSocket(fastify: FastifyInstance) {
               }
 
               const data = endRound(roomId, roomManager);
-              broadcastRoom(roomId, data);
+              broadcastRoom(roomId, roomManager, data);
               break;
             }
 
-            broadcastRoomOnSubmitted(roomId, data);
+            broadcastRoomOnSubmitted(roomId, roomManager, data);
             break;
           }
 
-          case "end_game": {
-            if (!roomManager.rooms[roomId].players[userId]) {
-              socket.send(JSON.stringify({ error: "Access forbidden" }));
-              return;
+          case "leave_game": {
+            if (
+              roomManager.rooms[roomId].round !== ROUND_NUMBER &&
+              roomManager.rooms[roomId].status != "lobby"
+            ) {
+              socket.send(JSON.stringify({ error: "Game not ended" }));
             }
 
-            endGame(roomId, userId, roomManager);
+            const data = leaveGame(roomId, userId, roomManager);
             socket.close();
 
+            broadcastRoom(roomId, roomManager, data);
             break;
+          }
+
+          default: {
+            socket.send(JSON.stringify({ error: "Unknown message type" }));
           }
         }
       });

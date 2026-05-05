@@ -6,7 +6,8 @@ import { getRandomDistinct } from "../utils.js";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 export const ROUND_DURATION = 20 * 1000;
-const ROUND_NUMBER = 10;
+export const ROUND_NUMBER = 10;
+export const MAX_PLAYER = 10;
 
 const nanoid = customAlphabet(ALPHABET, 6);
 
@@ -83,7 +84,16 @@ export function endRound(roomId: string, roomManager: RoomManager) {
     answers: roomManager.rooms[roomId].answers,
     round: roomManager.rooms[roomId].round,
     totalRounds: ROUND_NUMBER,
+    mode: roomManager.rooms[roomId].mode,
   };
+}
+
+export function setParameters(
+  mode: "classic" | "mean",
+  roomId: string,
+  roomManager: RoomManager,
+) {
+  roomManager.rooms[roomId].mode = mode;
 }
 
 export function submitAnswer(
@@ -105,12 +115,13 @@ export function submitAnswer(
   };
 }
 
-export function endGame(
+export function leaveGame(
   roomId: string,
   userId: string,
   roomManager: RoomManager,
 ) {
   delete roomManager.sockets[roomId][userId];
+  delete roomManager.rooms[roomId].players[userId];
 
   if (Object.keys(roomManager.sockets[roomId]).length === 0) {
     if (roomManager.rooms[roomId].roundTimer) {
@@ -120,7 +131,15 @@ export function endGame(
 
     delete roomManager.sockets[roomId];
     delete roomManager.rooms[roomId];
+
+    return;
   }
+
+  return {
+    status: roomManager.rooms[roomId].status,
+    playerNumber: roomManager.rooms[roomId].countPlayers(),
+    round: roomManager.rooms[roomId].round,
+  };
 }
 
 function redirectPlayer(

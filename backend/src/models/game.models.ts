@@ -2,7 +2,7 @@ import type { WebSocket } from "ws";
 import { rankDict } from "../utils.js";
 
 const MAX_SCORE = 100;
-const RATIO = 5;
+const RATIO = 5; // Revoir la def
 
 type Player = {
   name: string;
@@ -27,6 +27,7 @@ export class Room {
   roundEndsAt: number | null = null;
   roundTimer: NodeJS.Timeout | null = null;
   mean: number = 0;
+  mode: "classic" | "mean" = "classic";
 
   addPlayer(userId: string, name: string) {
     this.players[userId] = {
@@ -47,7 +48,7 @@ export class Room {
     const question = this.questions[this.round];
     if (!question) return;
 
-    if (Object.keys(this.players).length === 2) {
+    if (this.mode === "classic") {
       this.mean = this.questions[this.round].answer;
     } else {
       const answersArray = Object.values(this.answers).filter(
@@ -70,10 +71,15 @@ export class Room {
       if (this.answers[key] === null || this.answers[key] === 0) {
         this.players[key].score = 0;
       } else {
-        const diff = Math.max(
-          this.answers[key] / this.mean,
-          this.mean / this.answers[key],
-        );
+        let diff;
+        if (this.mode === "classic") {
+          diff = Math.max(
+            this.answers[key] / this.mean,
+            this.mean / this.answers[key],
+          );
+        } else {
+          diff = Math.abs(this.answers[key] - this.mean) / this.mean;
+        }
         this.players[key].score = Math.round(
           MAX_SCORE / (1 + RATIO * (diff - 1) ** 2),
         );

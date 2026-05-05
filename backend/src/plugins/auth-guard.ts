@@ -4,12 +4,12 @@ import { fromNodeHeaders } from "better-auth/node";
 import { auth } from "../auth.js";
 import { prisma } from "../db/prisma.js";
 
-async function authGuardPlugin(app: FastifyInstance) {
-  app.decorate(
+async function authGuardPlugin(fastify: FastifyInstance) {
+  fastify.decorate(
     "requireAuth",
-    async (req: FastifyRequest, reply: FastifyReply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       const session = await auth.api.getSession({
-        headers: fromNodeHeaders(req.headers),
+        headers: fromNodeHeaders(request.headers),
       });
 
       if (!session?.session?.userId) {
@@ -27,7 +27,7 @@ async function authGuardPlugin(app: FastifyInstance) {
         return reply.status(401).send({ message: "Unauthorized" });
       }
 
-      req.user = {
+      request.user = {
         id: session.session.userId,
         name: user.name,
       };
@@ -39,7 +39,10 @@ export const authGuard = fp(authGuardPlugin);
 
 declare module "fastify" {
   interface FastifyInstance {
-    requireAuth: (req: FastifyRequest, reply: FastifyReply) => Promise<unknown>;
+    requireAuth: (
+      request: FastifyRequest,
+      reply: FastifyReply,
+    ) => Promise<void>;
   }
 
   interface FastifyRequest {

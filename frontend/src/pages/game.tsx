@@ -9,6 +9,8 @@ import Timer from "@/components/custom/timer";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import AnimatedNumber from "@/components/custom/animatedNumber";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 export default function Game() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -21,16 +23,23 @@ export default function Game() {
     setJoinRoomId,
     answer,
     setAnswer,
+    mode,
+    setMode,
     startRound,
     submitAnswer,
-    endGame,
+    leaveGame,
     loading,
   } = useGame(roomId);
 
   const [showNewRank, setShowNewRank] = useState(false);
+  const isMeanDisabled = room.status === "lobby" && room.playerNumber < 3;
 
   useEffect(() => {
-    if (room?.status !== "results") {
+    if (isMeanDisabled) {
+      setMode("classic");
+    }
+
+    if (room.status !== "results") {
       setAnswer(null);
       setShowNewRank(false);
       return;
@@ -50,7 +59,7 @@ export default function Game() {
     return () => {
       clearTimeout(timeout);
     };
-  }, [room?.status, room?.round]);
+  }, [room.status, room.round, isMeanDisabled]);
 
   if (loading) {
     return (
@@ -121,14 +130,46 @@ export default function Game() {
               <p className="text-2xl">
                 Joueurs dans la partie : {room.playerNumber}/10
               </p>
+              <RadioGroup
+                defaultValue="classic"
+                className="flex flex-row gap-12"
+                value={mode}
+                onValueChange={(value) => setMode(value as "classic" | "mean")}
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="classic" id="classic" />
+                  <Label className="font-semibold text-md" htmlFor="classic">
+                    Mode classique
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem
+                    value="mean"
+                    id="mean"
+                    disabled={isMeanDisabled}
+                  />
+                  <Label
+                    className={`font-semibold text-md ${
+                      isMeanDisabled ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                    htmlFor="mean"
+                  >
+                    Mode moyenne
+                  </Label>
+                </div>
+              </RadioGroup>
               <div className="flex md:flex-row flex-col gap-8">
-                <Button className="w-60 h-20 text-lg" onClick={startRound}>
+                <Button
+                  className="w-60 h-20 text-lg"
+                  disabled={room.playerNumber < 2}
+                  onClick={startRound}
+                >
                   Commencer la partie
                 </Button>
                 <Button
                   variant="destructive"
                   className="w-60 h-20 text-lg"
-                  onClick={() => navigate("/homepage")}
+                  onClick={leaveGame}
                 >
                   Quitter la partie
                 </Button>
@@ -227,7 +268,7 @@ export default function Game() {
           <p>
             Réponse : {room.question.answer} {room.question.unit}
           </p>
-          {Object.keys(room.players).length === 2 ? null : (
+          {room.mode === "classic" ? null : (
             <>
               <div className="self-stretch h-[2px] bg-gray-400" />
               <p>
@@ -265,15 +306,17 @@ export default function Game() {
                   className="flex w-full flex-row items-center justify-between gap-2 p-2"
                   key={key}
                 >
-                  <div className="flex flex-row items-center justify-center gap-2">
-                    <Badge>
+                  <div className="flex flex-row items-center justify-center gap-4">
+                    <Badge className="aspect-square w-10">
                       <h1 className="text-2xl">
                         {showNewRank
                           ? room.players[key].rank
                           : room.players[key].lastRank}
                       </h1>
                     </Badge>
-                    <h1>{room.players[key].name}</h1>
+                    <h1 className="font-bold text-lg">
+                      {room.players[key].name}
+                    </h1>
                   </div>
                   <div className="flex flex-row items-center justify-center gap-2">
                     <p>
@@ -301,7 +344,7 @@ export default function Game() {
             ))}
         </div>
         {room.totalRounds === room.round ? (
-          <Button className="text-lg" onClick={endGame}>
+          <Button className="text-lg" onClick={leaveGame}>
             Retourner au menu
           </Button>
         ) : (

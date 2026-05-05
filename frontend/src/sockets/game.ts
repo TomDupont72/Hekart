@@ -14,6 +14,17 @@ export function socketRoomJoin(socket: WebSocket) {
   };
 }
 
+export function socketSetParameters(socket: WebSocket, mode: string) {
+  if (socket.readyState !== WebSocket.OPEN) return;
+
+  socket.send(
+    JSON.stringify({
+      type: "set_parameters",
+      mode: mode,
+    }),
+  );
+}
+
 export function socketStartRound(socket: WebSocket) {
   if (socket.readyState !== WebSocket.OPEN) return;
 
@@ -35,12 +46,12 @@ export function socketSubmitAnswer(socket: WebSocket, answer: number) {
   );
 }
 
-export function socketEndGame(socket: WebSocket) {
+export function socketLeaveGame(socket: WebSocket) {
   if (socket.readyState !== WebSocket.OPEN) return;
 
   socket.send(
     JSON.stringify({
-      type: "end_game",
+      type: "leave_game",
     }),
   );
 }

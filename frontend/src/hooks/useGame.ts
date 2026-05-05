@@ -2,9 +2,10 @@ import { apiCreateGame } from "@/api/game";
 import type { Room } from "@/models/game.models";
 import { JoinGameSchema, SubmitAnswerSchema } from "@/modules/game.schemas";
 import {
-  socketEndGame,
+  socketLeaveGame,
   socketRoomCreate,
   socketRoomJoin,
+  socketSetParameters,
   socketStartRound,
   socketSubmitAnswer,
 } from "@/sockets/game";
@@ -23,6 +24,7 @@ export function useGame(roomId?: string | null) {
     round: 0,
   });
   const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [mode, setMode] = useState<string>("classic");
   const [formError, setFormError] = useState<string | null>(null);
 
   const createGameMutation = useMutation({
@@ -55,6 +57,7 @@ export function useGame(roomId?: string | null) {
       return result.data.roomId;
     },
     onSuccess: (data) => {
+      setRoom({ status: "lobby", playerNumber: 0, round: 0 });
       navigate(`/game/${data}`);
     },
     onError: (error) => {
@@ -67,6 +70,11 @@ export function useGame(roomId?: string | null) {
     mutationFn: async (socket: WebSocket | null) => {
       if (!socket) {
         throw new Error("Pas de socket.");
+      }
+
+      if (room.round === 0) {
+        // Voir si on peut pas faire mieux
+        socketSetParameters(socket, mode);
       }
 
       socketStartRound(socket);
@@ -104,13 +112,13 @@ export function useGame(roomId?: string | null) {
     },
   });
 
-  const endGameMutation = useMutation({
+  const leaveGameMutation = useMutation({
     mutationFn: async (socket: WebSocket | null) => {
       if (!socket) {
         throw new Error("Pas de socket.");
       }
 
-      socketEndGame(socket);
+      socketLeaveGame(socket);
     },
     onSuccess: () => {
       navigate("/homepage");
@@ -131,7 +139,6 @@ export function useGame(roomId?: string | null) {
   async function joinGame(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setFormError(null);
-    setRoom({ status: "lobby", playerNumber: 0, round: 0 });
 
     await joinGameMutation.mutateAsync(joinRoomId);
   }
@@ -149,10 +156,10 @@ export function useGame(roomId?: string | null) {
     await submitAnswerMutation.mutateAsync({ socket, answer });
   }
 
-  async function endGame() {
+  async function leaveGame() {
     setFormError(null);
 
-    await endGameMutation.mutateAsync(socket);
+    await leaveGameMutation.mutateAsync(socket);
   }
 
   useEffect(() => {
@@ -185,11 +192,14 @@ export function useGame(roomId?: string | null) {
     setJoinRoomId,
     answer,
     setAnswer,
+    mode,
+    setMode,
     startRound,
     submitAnswer,
-    endGame,
+    leaveGame,
     loading:
       createGameMutation.isPending ||
+      joinGameMutation.isPending ||
       (room.status === "lobby" && !room?.playerNumber),
     formError,
   };

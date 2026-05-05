@@ -49,4 +49,5 @@ export type Room =
       answers: Record<string, number | null>;
       round: number;
       totalRounds: number;
+      mode: "classic" | "mean";
     };

@@ -1,3 +1,4 @@
+import ErrorAlert from "@/components/custom/errorAlert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
@@ -10,7 +11,12 @@ export default function Homepage() {
   const navigate = useNavigate();
 
   const { session, logOut, loading: authLoading } = useAuth();
-  const { createGame, loading: gameLoading } = useGame();
+  const {
+    createGame,
+    loading: gameLoading,
+    formError,
+    setFormError,
+  } = useGame();
 
   if (authLoading || gameLoading) {
     return (
@@ -29,9 +35,12 @@ export default function Homepage() {
         transition={{ duration: 0.3 }}
         className="flex items-center gap-4"
       >
-        <Card>
+        <Card className="sm:w-full w-9/10 mx-auto">
           <CardContent className="flex flex-col items-center justify-center gap-18 pb-12 p-16">
-            <h1 className="text-4xl"> Bonjour {session?.user.name}</h1>
+            <h1 className="text-4xl text-center">
+              {" "}
+              Bonjour {session?.user.name}
+            </h1>
             <div className="flex md:flex-row flex-col gap-8">
               <Button className="w-60 h-30 text-lg" onClick={createGame}>
                 Créer une partie
@@ -53,6 +62,12 @@ export default function Homepage() {
       >
         Se déconnecter
       </Button>
+
+      <ErrorAlert
+        error={formError}
+        className="absolute bottom-8 left-8"
+        setErrorToNull={() => setFormError(null)}
+      />
     </main>
   );
 }

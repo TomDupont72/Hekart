@@ -63,7 +63,7 @@ export function useAuth() {
     },
     onError: (error) => {
       console.error("[useAuth.signIn] failed", error);
-      setFormError("Impossible de se connecter.");
+      setFormError(error.message ?? "Impossible de se connecter.");
     },
   });
 
@@ -116,7 +116,7 @@ export function useAuth() {
     },
     onError: (error) => {
       console.error("[useAuth.register] failed", error);
-      setFormError("Impossible de s'inscrire.");
+      setFormError(error.message ?? "Impossible de s'inscrire.");
     },
   });
 
@@ -131,7 +131,7 @@ export function useAuth() {
     },
     onError: (error) => {
       console.error("[useAuth.logOut] failed", error);
-      setFormError("Impossible de se déconnecter.");
+      setFormError(error.message ?? "Impossible de se déconnecter.");
     },
   });
 

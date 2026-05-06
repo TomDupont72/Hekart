@@ -11,6 +11,8 @@ import { useEffect, useState } from "react";
 import AnimatedNumber from "@/components/custom/animatedNumber";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import BigNumber from "@/components/custom/bigNumber";
+import ErrorAlert from "@/components/custom/errorAlert";
 
 export default function Game() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -29,6 +31,8 @@ export default function Game() {
     submitAnswer,
     leaveGame,
     loading,
+    formError,
+    setFormError,
   } = useGame(roomId);
 
   const [showNewRank, setShowNewRank] = useState(false);
@@ -79,7 +83,7 @@ export default function Game() {
           transition={{ duration: 0.3 }}
           className="flex items-center gap-4"
         >
-          <Card>
+          <Card className="sm:w-full w-9/10 mx-auto">
             <CardContent>
               <form
                 className="flex flex-col items-center justify-center gap-8 pb-12 p-16"
@@ -87,7 +91,7 @@ export default function Game() {
                   joinGame(e);
                 }}
               >
-                <h1 className="text-3xl">Rejoindre une partie</h1>
+                <h1 className="text-3xl text-center">Rejoindre une partie</h1>
                 <Input
                   type="text"
                   placeholder="Id de la partie"
@@ -110,6 +114,12 @@ export default function Game() {
             </CardContent>
           </Card>
         </motion.div>
+
+        <ErrorAlert
+          error={formError}
+          className="absolute bottom-8 left-8"
+          setErrorToNull={() => setFormError(null)}
+        />
       </main>
     );
   }
@@ -124,10 +134,12 @@ export default function Game() {
           transition={{ duration: 0.3 }}
           className="flex items-center gap-4"
         >
-          <Card>
+          <Card className="sm:w-full w-9/10 mx-auto">
             <CardContent className="flex flex-col items-center justify-center gap-8 pb-12 p-16">
-              <h1 className="text-2xl">Id de la partie : {roomId}</h1>
-              <p className="text-2xl">
+              <h1 className="text-2xl text-center">
+                Id de la partie : {roomId}
+              </h1>
+              <p className="text-2xl text-center">
                 Joueurs dans la partie : {room.playerNumber}/10
               </p>
               <RadioGroup
@@ -177,6 +189,12 @@ export default function Game() {
             </CardContent>
           </Card>
         </motion.div>
+
+        <ErrorAlert
+          error={formError}
+          className="absolute bottom-8 left-8"
+          setErrorToNull={() => setFormError(null)}
+        />
       </main>
     );
   }
@@ -191,7 +209,7 @@ export default function Game() {
           transition={{ duration: 0.3 }}
           className="flex items-center gap-4"
         >
-          <Card>
+          <Card className="sm:w-full w-9/10 mx-auto">
             <CardContent>
               <form
                 className="flex flex-col items-center justify-center gap-8 pb-12 p-16"
@@ -227,6 +245,12 @@ export default function Game() {
             </CardContent>
           </Card>
         </motion.div>
+
+        <ErrorAlert
+          error={formError}
+          className="absolute bottom-8 left-8"
+          setErrorToNull={() => setFormError(null)}
+        />
       </main>
     );
   }
@@ -241,16 +265,24 @@ export default function Game() {
           transition={{ duration: 0.3 }}
           className="flex items-center gap-4"
         >
-          <Card>
+          <Card className="sm:w-full w-9/10 mx-auto">
             <CardContent>
-              <h1 className="text-2xl text-center">Votre réponse : {answer}</h1>
-              <p className="text-2xl">
+              <h1 className="text-2xl text-center">
+                Votre réponse : <BigNumber number={answer} />
+              </h1>
+              <p className="text-2xl text-center">
                 En attente de {room.answerNotSubmittedNumber}{" "}
                 {room.answerNotSubmittedNumber > 1 ? "joueurs" : "joueur"}
               </p>
             </CardContent>
           </Card>
         </motion.div>
+
+        <ErrorAlert
+          error={formError}
+          className="absolute bottom-8 left-8"
+          setErrorToNull={() => setFormError(null)}
+        />
       </main>
     );
   }
@@ -258,7 +290,7 @@ export default function Game() {
   if (room.status === "results") {
     return (
       <main className="flex h-screen flex-col items-center justify-center gap-6">
-        <Card className="p-4">
+        <Card className="p-4 sm:max-w-full max-w-9/10 mx-auto">
           <h1>{room.question.question}</h1>
         </Card>
         <Badge
@@ -266,13 +298,14 @@ export default function Game() {
           className="flex flex-col justify-center items-center p-4"
         >
           <p>
-            Réponse : {room.question.answer} {room.question.unit}
+            Réponse : <BigNumber number={room.question.answer} />{" "}
+            {room.question.unit}
           </p>
           {room.mode === "classic" ? null : (
             <>
               <div className="self-stretch h-[2px] bg-gray-400" />
               <p>
-                Moyenne : {room.mean} {room.question.unit}
+                Moyenne : <BigNumber number={room.mean} /> {room.question.unit}
               </p>
             </>
           )}
@@ -320,7 +353,7 @@ export default function Game() {
                   </div>
                   <div className="flex flex-row items-center justify-center gap-2">
                     <p>
-                      {room.answers[key] ?? "Pas de réponse"}{" "}
+                      <BigNumber number={room.answers[key]} />{" "}
                       {room.answers[key] === null ? null : room.question.unit}
                     </p>
                     <div className="self-stretch w-[2px] bg-gray-400" />
@@ -352,6 +385,12 @@ export default function Game() {
             Round suivant
           </Button>
         )}
+
+        <ErrorAlert
+          error={formError}
+          className="absolute bottom-8 left-8"
+          setErrorToNull={() => setFormError(null)}
+        />
       </main>
     );
   }

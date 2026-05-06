@@ -7,9 +7,11 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { Spinner } from "@/components/ui/spinner";
 import { useNavigate } from "react-router-dom";
+import ErrorAlert from "@/components/custom/errorAlert";
 
 export default function Login() {
-  const { setEmailSI, setPasswordSI, loading, signIn } = useAuth();
+  const { setEmailSI, setPasswordSI, loading, signIn, error, setError } =
+    useAuth();
   const navigate = useNavigate();
 
   return (
@@ -59,6 +61,12 @@ export default function Login() {
           </Button>
         </p>
       </motion.div>
+
+      <ErrorAlert
+        error={error}
+        className="absolute bottom-8 left-8"
+        setErrorToNull={() => setError(null)}
+      />
     </main>
   );
 }

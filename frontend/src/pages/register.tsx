@@ -1,3 +1,4 @@
+import ErrorAlert from "@/components/custom/errorAlert";
 import InputPassword from "@/components/custom/inputPassword";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +17,8 @@ export default function Register() {
     setPasswordConfirmR,
     loading,
     register,
+    error,
+    setError,
   } = useAuth();
   const navigate = useNavigate();
 
@@ -83,6 +86,12 @@ export default function Register() {
           </Button>
         </p>
       </motion.div>
+
+      <ErrorAlert
+        error={error}
+        className="absolute bottom-8 left-8"
+        setErrorToNull={() => setError(null)}
+      />
     </main>
   );
 }

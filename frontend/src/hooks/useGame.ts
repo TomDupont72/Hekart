@@ -202,5 +202,6 @@ export function useGame(roomId?: string | null) {
       joinGameMutation.isPending ||
       (room.status === "lobby" && !room?.playerNumber),
     formError,
+    setFormError,
   };
 }

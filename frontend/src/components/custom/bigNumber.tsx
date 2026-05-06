@@ -2,7 +2,7 @@ type NumberProps = {
   number: number | null;
 };
 
-export default function BigNumber({ number, ...props }: NumberProps) {
+export default function BigNumber({ number }: NumberProps) {
   const names: Record<number, string> = {
     2: "million",
     3: "milliard",

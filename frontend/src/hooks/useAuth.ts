@@ -3,14 +3,11 @@ import { authClient } from "@/lib/auth-client";
 import { useNavigate, useLocation } from "react-router-dom";
 import { apiLogOut, apiSignIn, apiSignUp } from "@/api/auth";
 import { RegisterSchema, SignInSchema } from "@/modules/auth.schemas";
-import { useMutation } from "@tanstack/react-query";
-import type { AppSession } from "@/models/auth.models";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 export function useAuth() {
   const navigate = useNavigate();
   const location = useLocation();
-
-  const [session, setSession] = useState<AppSession | null>(null);
 
   const [emailSI, setEmailSI] = useState("");
   const [passwordSI, setPasswordSI] = useState("");
@@ -21,6 +18,17 @@ export function useAuth() {
   const [passwordConfirmR, setPasswordConfirmR] = useState("");
 
   const [formError, setFormError] = useState<string | null>(null);
+
+  const sessionQuery = useQuery({
+    queryKey: ["session"],
+    queryFn: async () => {
+      return await authClient.getSession();
+    },
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    retry: false,
+  });
 
   const signInMutation = useMutation({
     mutationFn: async ({
@@ -99,7 +107,6 @@ export function useAuth() {
       return apiLogOut();
     },
     onSuccess: () => {
-      setSession(null);
       navigate("/login", { replace: true });
     },
     onError: (error) => {
@@ -136,6 +143,8 @@ export function useAuth() {
     await logOutMutation.mutateAsync();
   }
 
+  const session = sessionQuery.data?.data;
+
   useEffect(() => {
     const publicRoutes = ["/login", "/register"];
     const isPublicRoute = publicRoutes.includes(location.pathname);
@@ -145,19 +154,6 @@ export function useAuth() {
         if (!isPublicRoute) navigate("/login", { replace: true });
         return;
       }
-
-      const appSession: AppSession = {
-        user: {
-          email: res.data.user.email,
-          name: res.data.user.name,
-          id: res.data.user.id,
-          isAdmin: res.data.user.isAdmin,
-        },
-        createdAt: res.data.user.createdAt,
-        expiresAt: res.data.session.expiresAt,
-      };
-
-      setSession(appSession);
 
       if (isPublicRoute) navigate("/homepage", { replace: true });
     });
@@ -174,8 +170,11 @@ export function useAuth() {
     loading:
       signInMutation.isPending ||
       registerMutation.isPending ||
-      logOutMutation.isPending,
-    error: formError,
+      logOutMutation.isPending ||
+      sessionQuery.isLoading,
+    error:
+      formError ||
+      (sessionQuery.isError ? "Impossible de récupérer la session." : null),
     setError: setFormError,
     signIn,
     register,

@@ -27,10 +27,11 @@ export default function Homepage() {
   }
 
   return (
-    <main className="flex h-screen items-center justify-center ">
+    <main className="flex h-screen items-center justify-center">
       <Button
         className="absolute top-5 right-5"
         hidden={!session?.user.isAdmin}
+        onClick={() => navigate("/rooms")}
       >
         État des parties
       </Button>

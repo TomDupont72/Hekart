@@ -10,8 +10,6 @@ export function useAuth() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const localSession = JSON.parse(localStorage.getItem("session") || "null");
-
   const [session, setSession] = useState<AppSession | null>(null);
 
   const [emailSI, setEmailSI] = useState("");
@@ -46,19 +44,7 @@ export function useAuth() {
 
       return apiSignIn(result.data.email, result.data.password);
     },
-    onSuccess: (data) => {
-      localStorage.setItem(
-        "session",
-        JSON.stringify({
-          user: {
-            email: data.user.email,
-            name: data.user.name,
-            id: data.user.id,
-          },
-          createdAt: data.user.createdAt,
-        } as AppSession),
-      );
-
+    onSuccess: () => {
       navigate("/homepage", { replace: true });
     },
     onError: (error) => {
@@ -99,19 +85,7 @@ export function useAuth() {
         result.data.username,
       );
     },
-    onSuccess: (data) => {
-      localStorage.setItem(
-        "session",
-        JSON.stringify({
-          user: {
-            email: data.user.email,
-            name: data.user.name,
-            id: data.user.id,
-          },
-          createdAt: data.user.createdAt,
-        } as AppSession),
-      );
-
+    onSuccess: () => {
       navigate("/homepage", { replace: true });
     },
     onError: (error) => {
@@ -125,7 +99,6 @@ export function useAuth() {
       return apiLogOut();
     },
     onSuccess: () => {
-      localStorage.removeItem("session");
       setSession(null);
       navigate("/login", { replace: true });
     },
@@ -167,12 +140,6 @@ export function useAuth() {
     const publicRoutes = ["/login", "/register"];
     const isPublicRoute = publicRoutes.includes(location.pathname);
 
-    if (localSession?.user?.id) {
-      setSession(localSession);
-      if (isPublicRoute) navigate("/homepage", { replace: true });
-      return;
-    }
-
     authClient.getSession().then((res) => {
       if (!res.data) {
         if (!isPublicRoute) navigate("/login", { replace: true });
@@ -184,12 +151,12 @@ export function useAuth() {
           email: res.data.user.email,
           name: res.data.user.name,
           id: res.data.user.id,
+          isAdmin: res.data.user.isAdmin,
         },
         createdAt: res.data.user.createdAt,
         expiresAt: res.data.session.expiresAt,
       };
 
-      localStorage.setItem("session", JSON.stringify(appSession));
       setSession(appSession);
 
       if (isPublicRoute) navigate("/homepage", { replace: true });

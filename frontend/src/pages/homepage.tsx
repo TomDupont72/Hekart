@@ -28,6 +28,12 @@ export default function Homepage() {
 
   return (
     <main className="flex h-screen items-center justify-center ">
+      <Button
+        className="absolute top-5 right-5"
+        hidden={!session?.user.isAdmin}
+      >
+        État des parties
+      </Button>
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.9 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}

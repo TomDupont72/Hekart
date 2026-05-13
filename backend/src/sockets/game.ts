@@ -43,6 +43,26 @@ function broadcastRoomOnSubmitted(
   });
 }
 
+function broadcastRoomOnAdmin(roomManager: RoomManager) {
+  const sockets = roomManager.adminSockets;
+  if (!sockets) return;
+
+  const message = {
+    data: Object.fromEntries(
+      Object.entries(roomManager.rooms).map(([key, value]) => [
+        key,
+        value.countPlayers(),
+      ]),
+    ),
+  };
+
+  for (const socket of Object.values(sockets)) {
+    if (socket.readyState === 1) {
+      socket.send(JSON.stringify(message));
+    }
+  }
+}
+
 export async function gameSocket(fastify: FastifyInstance) {
   fastify.get(
     "/room/:roomId",
@@ -65,6 +85,8 @@ export async function gameSocket(fastify: FastifyInstance) {
           case "join": {
             const data = joinGame(userId, name, roomId, socket, roomManager);
             broadcastRoom(roomId, roomManager, data);
+            broadcastRoomOnAdmin(roomManager);
+            console.log(roomManager.adminSockets);
             break;
           }
 
@@ -166,12 +188,40 @@ export async function gameSocket(fastify: FastifyInstance) {
             socket.close();
 
             broadcastRoom(roomId, roomManager, data);
+            broadcastRoomOnAdmin(roomManager);
             break;
           }
 
           default: {
             socket.send(JSON.stringify({ error: "Unknown message type" }));
           }
+        }
+      });
+    },
+  );
+
+  fastify.get(
+    "/rooms",
+    {
+      preHandler: [fastify.requireAuth /* Ajouter fastify.requireAdmin */],
+      websocket: true,
+    },
+    (socket: WebSocket, request: FastifyRequest) => {
+      const roomManager: RoomManager = fastify.roomManager;
+
+      const userId = request.user.id;
+
+      socket.on("message", (raw: string) => {
+        const msg = JSON.parse(raw.toString());
+
+        switch (msg.type) {
+          case "get_rooms": {
+            // Refacto ici
+            roomManager.adminSockets[userId] = socket;
+            broadcastRoomOnAdmin(roomManager);
+          }
+
+          // Ne pas oublier de fermer la socket
         }
       });
     },

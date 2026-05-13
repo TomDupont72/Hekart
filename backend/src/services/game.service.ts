@@ -121,6 +121,8 @@ export function leaveGame(
   roomManager: RoomManager,
 ) {
   delete roomManager.sockets[roomId][userId];
+  delete roomManager.rooms[roomId].players[userId];
+  delete roomManager.rooms[roomId].answers[userId];
 
   if (Object.keys(roomManager.sockets[roomId]).length === 0) {
     if (roomManager.rooms[roomId].roundTimer) {
@@ -140,6 +142,7 @@ export function leaveGame(
       roomManager.rooms[roomId].questions[roomManager.rooms[roomId].round - 1],
     mean: roomManager.rooms[roomId].mean,
     players: roomManager.rooms[roomId].players,
+    playerNumber: roomManager.rooms[roomId].countPlayers(),
     answers: roomManager.rooms[roomId].answers,
     round: roomManager.rooms[roomId].round,
     totalRounds: ROUND_NUMBER,

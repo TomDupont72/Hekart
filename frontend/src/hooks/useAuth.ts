@@ -149,13 +149,17 @@ export function useAuth() {
     const publicRoutes = ["/login", "/register"];
     const isPublicRoute = publicRoutes.includes(location.pathname);
 
+    const adminRoutes = ["/rooms"];
+    const isAdminRoutes = adminRoutes.includes(location.pathname);
+
     authClient.getSession().then((res) => {
       if (!res.data) {
         if (!isPublicRoute) navigate("/login", { replace: true });
         return;
       }
 
-      if (isPublicRoute) navigate("/homepage", { replace: true });
+      if (isPublicRoute || (isAdminRoutes && !res.data.user.isAdmin))
+        navigate("/homepage", { replace: true });
     });
   }, []);
 

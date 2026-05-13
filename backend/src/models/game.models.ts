@@ -123,4 +123,5 @@ export class Room {
 export class RoomManager {
   rooms: Record<string, Room> = {};
   sockets: Record<string, Record<string, WebSocket>> = {};
+  adminSockets: Record<string, WebSocket> = {};
 }

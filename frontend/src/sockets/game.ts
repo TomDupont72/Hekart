@@ -4,6 +4,10 @@ export function socketRoomCreate(roomId: string) {
   return new WebSocket(`${socketUrl}/ws/game/room/${roomId}`);
 }
 
+export function socketRoomsCreate() {
+  return new WebSocket(`${socketUrl}/ws/game/rooms`);
+}
+
 export function socketRoomJoin(socket: WebSocket) {
   socket.onopen = () => {
     socket.send(
@@ -54,4 +58,14 @@ export function socketLeaveGame(socket: WebSocket) {
       type: "leave_game",
     }),
   );
+}
+
+export function socketGetRooms(socket: WebSocket) {
+  socket.onopen = () => {
+    socket.send(
+      JSON.stringify({
+        type: "get_rooms",
+      }),
+    );
+  };
 }

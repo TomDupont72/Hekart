@@ -43,7 +43,7 @@ export default function Homepage() {
                 className="flex items-center gap-4"
             >
                 <Card className="sm:w-full w-9/10 mx-auto">
-                    <CardContent className="flex flex-col items-center justify-center gap-8 pb-12 p-16">
+                    <CardContent className="flex flex-col items-center justify-center gap-6 py-4 px-12">
                         <h1 className="text-4xl text-center">
                             {" "}
                             Bonjour {session?.user.name}

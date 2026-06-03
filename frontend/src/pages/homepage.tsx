@@ -43,7 +43,7 @@ export default function Homepage() {
                 className="flex items-center gap-4"
             >
                 <Card className="sm:w-full w-9/10 mx-auto">
-                    <CardContent className="flex flex-col items-center justify-center gap-18 pb-12 p-16">
+                    <CardContent className="flex flex-col items-center justify-center gap-8 pb-12 p-16">
                         <h1 className="text-4xl text-center">
                             {" "}
                             Bonjour {session?.user.name}
@@ -66,7 +66,7 @@ export default function Homepage() {
                 </Card>
             </motion.div>
             <Button
-                className="absolute bottom-5 left-5"
+                className="absolute bottom-5 left-5 max-w-[50%] h-auto whitespace-normal break-words text-left leading-tight justify-start"
                 variant="link"
                 onClick={() => {
                     navigate("/legal", { replace: true });

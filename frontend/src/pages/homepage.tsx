@@ -69,7 +69,7 @@ export default function Homepage() {
                 className="absolute bottom-5 left-5 max-w-[50%] h-auto whitespace-normal break-words text-left leading-tight justify-start"
                 variant="link"
                 onClick={() => {
-                    navigate("/legal", { replace: true });
+                    navigate("/legal");
                     setTimeout(() => {
                         window.scrollTo({ top: 0, behavior: "instant" });
                     }, 0);

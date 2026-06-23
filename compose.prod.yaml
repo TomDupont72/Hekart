@@ -1,20 +1,26 @@
 services:
   backend:
-    image: ghcr.io/tomdupont72/hekart-backend:latest
+    image: ghcr.io/tomdupont72/hekart-backend:${APP_VERSION:-latest}
+    container_name: hekart-backend
     env_file:
       - /etc/hekart-api.env
     ports:
       - "127.0.0.1:8002:8000"
     networks:
-      - shared-network
+      - hekart
+      - infrastructure
     restart: unless-stopped
 
   frontend:
-    image: ghcr.io/tomdupont72/hekart-frontend:latest
+    image: ghcr.io/tomdupont72/hekart-frontend:${APP_VERSION:-latest}
+    container_name: hekart-frontend
     ports:
       - "127.0.0.1:5173:80"
+    networks:
+      - hekart
     restart: unless-stopped
 
 networks:
-  shared-network:
+  hekart:
+  infrastructure:
     external: true
